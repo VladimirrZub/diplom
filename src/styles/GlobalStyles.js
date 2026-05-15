@@ -9,6 +9,10 @@ const GlobalStyles = createGlobalStyle`
     box-sizing: border-box;
   }
 
+  html {
+    background: ${props => props.theme.colors.darker};
+  }
+
   body {
     font-family: ${props => props.theme.fonts.secondary};
     background: ${props => props.theme.colors.darker};
@@ -17,6 +21,11 @@ const GlobalStyles = createGlobalStyle`
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  #root {
+    position: relative;
+    background: ${props => props.theme.colors.darker};
   }
 
   ::selection {

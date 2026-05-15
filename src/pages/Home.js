@@ -1,252 +1,519 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { ArrowRight } from 'lucide-react';
-import GlassCard from '../components/UI/GlassCard';
+import { ArrowRight, Sparkles, Shield, Clock } from 'lucide-react';
 import Button from '../components/UI/Button';
 
 const Container = styled.div`
-  max-width: 1500px;
-  margin: 0 auto;
-  padding: 0 3rem;
-
-  @media (max-width: 768px) {
-    padding: 0 1.5rem;
-  }
-`;
-
-const Hero = styled.section`
-  text-align: center;
-  padding: 5rem 0 8rem;
+  max-width: 100%;
+  overflow-x: hidden;
   position: relative;
 `;
 
-const HeroLabel = styled.div`
+const HeroSection = styled.section`
+  position: relative;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+`;
+
+const HeroContent = styled.div`
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 0 2rem;
+  max-width: 1000px;
+  will-change: transform, opacity;
+`;
+
+const HeroEyebrow = styled.div`
   font-family: ${props => props.theme.fonts.primary};
-  font-size: 0.85rem;
-  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+  letter-spacing: 0.35em;
   text-transform: uppercase;
   color: ${props => props.theme.colors.accent};
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
+  will-change: transform, opacity;
+  
+  &::before, &::after {
+    content: '';
+    display: inline-block;
+    width: 40px;
+    height: 1px;
+    background: ${props => props.theme.colors.accent};
+    vertical-align: middle;
+    margin: 0 1.2rem;
+    opacity: 0.5;
+  }
 `;
 
 const HeroTitle = styled.h1`
   font-family: ${props => props.theme.fonts.primary};
-  font-size: 5rem;
+  font-size: clamp(2.8rem, 7vw, 6.5rem);
   font-weight: 700;
-  line-height: 1.1;
-  margin-bottom: 2rem;
-  letter-spacing: 0.03em;
+  line-height: 1.05;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.02em;
+  will-change: transform, opacity;
   
-  em {
-    font-style: normal;
+  .accent {
     color: ${props => props.theme.colors.accent};
+    position: relative;
+    display: inline-block;
   }
-
-  @media (max-width: 768px) {
-    font-size: 3rem;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 2.2rem;
+  
+  .accent::after {
+    content: '';
+    position: absolute;
+    bottom: 5px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: ${props => props.theme.colors.accent};
+    opacity: 0.4;
   }
 `;
 
-const HeroText = styled.p`
-  font-size: 1.15rem;
+const HeroSubtitle = styled.p`
+  font-size: 1.1rem;
   color: ${props => props.theme.colors.textDimmed};
-  max-width: 650px;
-  margin: 0 auto 3rem;
+  max-width: 600px;
+  margin: 0 auto 3.5rem;
   line-height: 1.8;
   font-weight: 300;
+  will-change: transform, opacity;
+`;
+
+const HeroButtons = styled.div`
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  will-change: transform, opacity;
+`;
+
+const ScrollIndicator = styled.div`
+  position: absolute;
+  bottom: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  z-index: 10;
+  will-change: opacity;
+`;
+
+const ScrollLine = styled.div`
+  width: 1px;
+  height: 50px;
+  background: linear-gradient(to bottom, ${props => props.theme.colors.accent}, transparent);
+`;
+
+const ScrollText = styled.span`
+  font-family: ${props => props.theme.fonts.primary};
+  font-size: 0.7rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: ${props => props.theme.colors.textMuted};
 `;
 
 const Section = styled.section`
-  padding: 6rem 0;
+  padding: 8rem 2rem;
+  position: relative;
+
+  @media (max-width: 768px) {
+    padding: 5rem 1.5rem;
+  }
 `;
 
-const SectionHeader = styled.div`
-  text-align: center;
-  margin-bottom: 5rem;
+const SectionInner = styled.div`
+  max-width: 1400px;
+  margin: 0 auto;
 `;
 
 const SectionLabel = styled.div`
   font-family: ${props => props.theme.fonts.primary};
-  font-size: 0.8rem;
-  letter-spacing: 0.25em;
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
   color: ${props => props.theme.colors.accent};
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.8rem;
 `;
 
 const SectionTitle = styled.h2`
   font-family: ${props => props.theme.fonts.primary};
-  font-size: 3.2rem;
+  font-size: clamp(2rem, 5vw, 3.8rem);
   font-weight: 700;
+  margin-bottom: 1.5rem;
   letter-spacing: 0.03em;
-
-  @media (max-width: 480px) {
-    font-size: 2.2rem;
+  line-height: 1.15;
+  
+  .accent {
+    color: ${props => props.theme.colors.accent};
+    font-style: italic;
   }
+`;
+
+const SectionDesc = styled.p`
+  color: ${props => props.theme.colors.textDimmed};
+  font-size: 1.05rem;
+  line-height: 1.8;
+  font-weight: 300;
+  max-width: 600px;
+  margin-bottom: 4rem;
 `;
 
 const FeaturesGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  background: ${props => props.theme.colors.border};
+  gap: 2rem;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
 `;
 
-const FeatureItem = styled.div`
+const FeatureCard = styled.div`
   background: ${props => props.theme.colors.surface};
-  padding: 4rem 3rem;
-  text-align: center;
-  transition: background 0.4s;
-
+  border: 1px solid ${props => props.theme.colors.border};
+  padding: 3.5rem 2.5rem;
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: ${props => props.theme.colors.goldGradient};
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.5s;
+  }
+  
   &:hover {
-    background: ${props => props.theme.colors.elevated};
-  }
-
-  h3 {
-    font-family: ${props => props.theme.fonts.primary};
-    font-size: 1.6rem;
-    margin-bottom: 1.2rem;
-    letter-spacing: 0.05em;
-  }
-
-  p {
-    color: ${props => props.theme.colors.textMuted};
-    line-height: 1.7;
-    font-weight: 300;
+    transform: translateY(-8px);
+    border-color: ${props => props.theme.colors.borderAccent};
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+    
+    &::before {
+      transform: scaleX(1);
+    }
   }
 `;
 
-const Number = styled.div`
-  font-family: ${props => props.theme.fonts.primary};
-  font-size: 4rem;
+const FeatureIcon = styled.div`
+  width: 60px;
+  height: 60px;
+  border: 1px solid ${props => props.theme.colors.borderAccent};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
   color: ${props => props.theme.colors.accent};
-  margin-bottom: 1rem;
-  font-weight: 700;
-  opacity: 0.3;
+  transition: all 0.5s;
+  
+  ${FeatureCard}:hover & {
+    background: ${props => props.theme.colors.accent};
+    color: ${props => props.theme.colors.darker};
+    border-color: ${props => props.theme.colors.accent};
+  }
 `;
 
-const StatsRow = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1px;
-  background: ${props => props.theme.colors.border};
-  margin: 6rem 0;
+const FeatureTitle = styled.h3`
+  font-family: ${props => props.theme.fonts.primary};
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  letter-spacing: 0.03em;
+`;
+
+const FeatureText = styled.p`
+  color: ${props => props.theme.colors.textMuted};
+  line-height: 1.7;
+  font-weight: 300;
+  font-size: 0.95rem;
+`;
+
+const ProcessSection = styled.section`
+  padding: 8rem 2rem;
+  background: ${props => props.theme.colors.surface};
 
   @media (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
+    padding: 5rem 1.5rem;
   }
 `;
 
-const StatItem = styled.div`
-  background: ${props => props.theme.colors.surface};
-  padding: 3rem 2rem;
-  text-align: center;
+const ProcessGrid = styled.div`
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 4rem;
+  }
 `;
 
-const StatNumber = styled.div`
+const ProcessStep = styled.div`
+  position: relative;
+  
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 35px;
+    right: -1.5rem;
+    width: 3rem;
+    height: 1px;
+    background: ${props => props.theme.colors.borderAccent};
+
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+`;
+
+const StepNumber = styled.div`
   font-family: ${props => props.theme.fonts.primary};
-  font-size: 3rem;
+  font-size: 5rem;
   font-weight: 700;
   color: ${props => props.theme.colors.accent};
+  opacity: 0.12;
+  line-height: 1;
+  margin-bottom: -1rem;
+`;
 
-  @media (max-width: 480px) {
-    font-size: 2.2rem;
+const StepTitle = styled.h3`
+  font-family: ${props => props.theme.fonts.primary};
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  letter-spacing: 0.03em;
+`;
+
+const StepText = styled.p`
+  color: ${props => props.theme.colors.textMuted};
+  line-height: 1.7;
+  font-weight: 300;
+`;
+
+const CTASection = styled.section`
+  padding: 8rem 2rem;
+  text-align: center;
+  position: relative;
+
+  @media (max-width: 768px) {
+    padding: 5rem 1.5rem;
   }
 `;
 
-const StatLabel = styled.div`
-  color: ${props => props.theme.colors.textMuted};
-  font-size: 0.85rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-top: 0.5rem;
+const CTAInner = styled.div`
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 6rem 3rem;
+  background: ${props => props.theme.colors.surface};
+  border: 1px solid ${props => props.theme.colors.borderAccent};
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 20px;
+    right: 20px;
+    height: 1px;
+    background: ${props => props.theme.colors.goldGradient};
+  }
+
+  @media (max-width: 480px) {
+    padding: 3rem 1.5rem;
+  }
 `;
 
-const CTASection = styled.div`
-  text-align: center;
-  padding: 6rem 0;
+const CTATitle = styled.h2`
+  font-family: ${props => props.theme.fonts.primary};
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  
+  .accent {
+    color: ${props => props.theme.colors.accent};
+  }
+`;
+
+const CTAText = styled.p`
+  color: ${props => props.theme.colors.textDimmed};
+  margin-bottom: 3rem;
+  font-weight: 300;
+  line-height: 1.8;
 `;
 
 const Home = () => {
+  const eyebrowRef = useRef(null);
+  const titleRef = useRef(null);
+  const subtitleRef = useRef(null);
+  const buttonsRef = useRef(null);
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrolled = window.pageYOffset;
+      
+      if (eyebrowRef.current) {
+        eyebrowRef.current.style.transform = `translateY(${scrolled * 0.08}px)`;
+        eyebrowRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.001);
+      }
+      if (titleRef.current) {
+        titleRef.current.style.transform = `translateY(${scrolled * 0.1}px)`;
+        titleRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.0012);
+      }
+      if (subtitleRef.current) {
+        subtitleRef.current.style.transform = `translateY(${scrolled * 0.14}px)`;
+        subtitleRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.0018);
+      }
+      if (buttonsRef.current) {
+        buttonsRef.current.style.transform = `translateY(${scrolled * 0.16}px)`;
+        buttonsRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.001);
+      }
+      if (scrollRef.current) {
+        scrollRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.003);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const features = [
-    { number: '01', title: 'Экологичность', text: 'Безопасные чистящие средства без токсинов и аллергенов. Забота о здоровье и окружающей среде.' },
-    { number: '02', title: 'Опыт', text: 'Более десяти лет в сфере профессионального клининга. Отлаженные процессы и высочайшие стандарты.' },
-    { number: '03', title: 'Надёжность', text: 'Строгий отбор персонала и полная материальная ответственность за сохранность имущества.' },
+    {
+      icon: Sparkles,
+      title: 'Экологичность',
+      text: 'Безопасные чистящие средства без токсинов и аллергенов. Забота о здоровье и окружающей среде на каждом этапе.'
+    },
+    {
+      icon: Shield,
+      title: 'Надёжность',
+      text: 'Строгий отбор персонала и полная материальная ответственность. Ваше имущество под надёжной защитой.'
+    },
+    {
+      icon: Clock,
+      title: 'Пунктуальность',
+      text: 'Прибываем точно в назначенное время. Ценим ваше расписание и укладываемся в оговоренные сроки.'
+    },
   ];
 
   return (
     <Container>
-      <Hero>
-        <HeroLabel>Premium Cleaning Services</HeroLabel>
-        <HeroTitle>
-          Чистота как <em>искусство</em>
-        </HeroTitle>
-        <HeroText>
-          ClearBreath задаёт новые стандарты клининга. Мы превращаем уборку в безупречный ритуал, 
-          где каждая деталь имеет значение.
-        </HeroText>
-        <Button as={Link} to="/calculator" size="large">
-          Рассчитать стоимость <ArrowRight size={18} />
-        </Button>
-      </Hero>
+      <HeroSection>
+        <HeroContent>
+          <HeroEyebrow ref={eyebrowRef}>Premium Cleaning Services</HeroEyebrow>
+          <HeroTitle ref={titleRef}>
+            Чистота как <span className="accent">искусство</span>
+          </HeroTitle>
+          <HeroSubtitle ref={subtitleRef}>
+            ClearBreath задаёт новые стандарты клининга. Мы превращаем уборку 
+            в безупречный ритуал, где каждая деталь имеет значение.
+          </HeroSubtitle>
+          <HeroButtons ref={buttonsRef}>
+            <Button as={Link} to="/calculator" size="large">
+              Рассчитать стоимость
+            </Button>
+            <Button as={Link} to="/services" variant="outline" size="large">
+              Все услуги
+            </Button>
+          </HeroButtons>
+        </HeroContent>
+
+        <ScrollIndicator ref={scrollRef}>
+          <ScrollText>Листайте вниз</ScrollText>
+          <ScrollLine />
+        </ScrollIndicator>
+      </HeroSection>
 
       <Section>
-        <SectionHeader>
-          <SectionLabel>Why Us</SectionLabel>
-          <SectionTitle>Почему выбирают нас</SectionTitle>
-        </SectionHeader>
-        <FeaturesGrid>
-          {features.map((f, i) => (
-            <FeatureItem key={i}>
-              <Number>{f.number}</Number>
-              <h3>{f.title}</h3>
-              <p>{f.text}</p>
-            </FeatureItem>
-          ))}
-        </FeaturesGrid>
+        <SectionInner>
+          <SectionLabel>Why Choose Us</SectionLabel>
+          <SectionTitle>
+            Почему выбирают <span className="accent">нас</span>
+          </SectionTitle>
+          <SectionDesc>
+            Мы создаём пространство, в котором приятно находиться. 
+            Каждый элемент нашей работы продуман до мелочей.
+          </SectionDesc>
+          
+          <FeaturesGrid>
+            {features.map((f, i) => (
+              <FeatureCard key={i}>
+                <FeatureIcon>
+                  <f.icon size={24} />
+                </FeatureIcon>
+                <FeatureTitle>{f.title}</FeatureTitle>
+                <FeatureText>{f.text}</FeatureText>
+              </FeatureCard>
+            ))}
+          </FeaturesGrid>
+        </SectionInner>
       </Section>
 
-      <StatsRow>
-        <StatItem>
-          <StatNumber>5000</StatNumber>
-          <StatLabel>Клиентов</StatLabel>
-        </StatItem>
-        <StatItem>
-          <StatNumber>98%</StatNumber>
-          <StatLabel>Довольны</StatLabel>
-        </StatItem>
-        <StatItem>
-          <StatNumber>12</StatNumber>
-          <StatLabel>Лет опыта</StatLabel>
-        </StatItem>
-        <StatItem>
-          <StatNumber>24/7</StatNumber>
-          <StatLabel>Поддержка</StatLabel>
-        </StatItem>
-      </StatsRow>
+      <ProcessSection>
+        <SectionInner>
+          <SectionLabel>How It Works</SectionLabel>
+          <SectionTitle>
+            Как мы <span className="accent">работаем</span>
+          </SectionTitle>
+          <SectionDesc>
+            Простой и прозрачный процесс от заявки до идеального результата
+          </SectionDesc>
+
+          <ProcessGrid>
+            <ProcessStep>
+              <StepNumber>01</StepNumber>
+              <StepTitle>Заявка и расчёт</StepTitle>
+              <StepText>
+                Оставляете заявку на сайте или через калькулятор. 
+                Мы рассчитываем стоимость и согласовываем удобное время.
+              </StepText>
+            </ProcessStep>
+            <ProcessStep>
+              <StepNumber>02</StepNumber>
+              <StepTitle>Выезд бригады</StepTitle>
+              <StepText>
+                Наши специалисты прибывают точно в срок с полным набором 
+                профессионального оборудования и экологичных средств.
+              </StepText>
+            </ProcessStep>
+            <ProcessStep>
+              <StepNumber>03</StepNumber>
+              <StepTitle>Идеальный результат</StepTitle>
+              <StepText>
+                Вы принимаете работу и наслаждаетесь безупречной чистотой. 
+                Гарантия качества 24 часа после уборки.
+              </StepText>
+            </ProcessStep>
+          </ProcessGrid>
+        </SectionInner>
+      </ProcessSection>
 
       <CTASection>
-        <GlassCard padding="5rem">
-          <SectionLabel>Get Started</SectionLabel>
-          <SectionTitle style={{ fontSize: '2.5rem', marginBottom: '1.5rem' }}>
-            Готовы к идеальной чистоте?
-          </SectionTitle>
-          <p style={{ color: '#8B8478', marginBottom: '2.5rem', maxWidth: '500px', margin: '0 auto 2.5rem' }}>
-            Свяжитесь с нами для бесплатной консультации и расчёта стоимости
-          </p>
+        <CTAInner>
+          <SectionLabel>Get Started Today</SectionLabel>
+          <CTATitle>
+            Готовы к <span className="accent">идеальной</span> чистоте?
+          </CTATitle>
+          <CTAText>
+            Свяжитесь с нами для бесплатной консультации и точного расчёта стоимости услуг
+          </CTAText>
           <Button as={Link} to="/contacts" size="large">
-            Связаться <ArrowRight size={18} />
+            Связаться с нами
           </Button>
-        </GlassCard>
+        </CTAInner>
       </CTASection>
     </Container>
   );

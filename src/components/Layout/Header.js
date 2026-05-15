@@ -8,10 +8,16 @@ const HeaderWrapper = styled.header`
   left: 0;
   right: 0;
   z-index: 100;
-  padding: 1.2rem 0;
-  transition: background 0.5s;
-  background: ${props => props.scrolled ? 'rgba(5, 7, 10, 0.95)' : 'transparent'};
-  backdrop-filter: ${props => props.scrolled ? 'blur(30px)' : 'none'};
+  padding: 1.4rem 0;
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  background: ${props => props.scrolled 
+    ? 'rgba(5, 7, 10, 0.97)' 
+    : 'transparent'};
+  backdrop-filter: ${props => props.scrolled ? 'blur(40px)' : 'none'};
+  -webkit-backdrop-filter: ${props => props.scrolled ? 'blur(40px)' : 'none'};
+  border-bottom: ${props => props.scrolled 
+    ? `1px solid ${props.theme.colors.border}` 
+    : '1px solid transparent'};
 `;
 
 const Container = styled.div`
@@ -33,11 +39,26 @@ const Logo = styled(Link)`
   font-weight: 700;
   letter-spacing: 0.1em;
   color: ${props => props.theme.colors.accent};
+  transition: color 0.5s ease;
+  user-select: none;
   
   span {
     color: ${props => props.theme.colors.text};
     font-weight: 400;
-    margin-left: 5px;
+    margin-left: 4px;
+    transition: color 0.5s ease;
+  }
+
+  &:hover {
+    color: ${props => props.theme.colors.text};
+    
+    span {
+      color: ${props => props.theme.colors.accent};
+    }
+  }
+
+  &:active {
+    transform: scale(0.97);
   }
 `;
 
@@ -53,10 +74,12 @@ const Nav = styled.nav`
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(5, 7, 10, 0.98);
+    background: rgba(5, 7, 10, 0.99);
     flex-direction: column;
     justify-content: center;
     gap: 2.5rem;
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
   }
 `;
 
@@ -72,12 +95,12 @@ const NavLink = styled(Link)`
   &::after {
     content: '';
     position: absolute;
-    bottom: -6px;
+    bottom: -8px;
     left: 50%;
-    width: 4px;
-    height: 4px;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
     background: ${props => props.theme.colors.accent};
-    transform: rotate(45deg) translateX(-50%);
     opacity: ${props => props.active ? 1 : 0};
     transition: opacity 0.3s;
   }
@@ -94,8 +117,10 @@ const NavLink = styled(Link)`
 const MenuToggle = styled.button`
   display: none;
   background: none;
-  color: ${props => props.theme.colors.text};
+  border: none;
+  cursor: pointer;
   z-index: 101;
+  padding: 0.5rem;
   
   @media (max-width: 768px) {
     display: flex;
@@ -106,19 +131,19 @@ const MenuToggle = styled.button`
 
 const Bar = styled.span`
   display: block;
-  width: 28px;
+  width: 26px;
   height: 1.5px;
   background: ${props => props.theme.colors.text};
-  transition: all 0.3s;
+  transition: all 0.4s;
   
   &:nth-child(1) {
-    transform: ${props => props.open ? 'rotate(45deg) translate(5px, 5px)' : 'none'};
+    transform: ${props => props.open ? 'rotate(45deg) translate(5px, 6px)' : 'none'};
   }
   &:nth-child(2) {
     opacity: ${props => props.open ? 0 : 1};
   }
   &:nth-child(3) {
-    transform: ${props => props.open ? 'rotate(-45deg) translate(5px, -5px)' : 'none'};
+    transform: ${props => props.open ? 'rotate(-45deg) translate(5px, -6px)' : 'none'};
   }
 `;
 
@@ -131,7 +156,7 @@ const HeaderRight = styled.div`
 const ProfileLink = styled(Link)`
   font-family: ${props => props.theme.fonts.primary};
   font-size: 0.9rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: ${props => props.theme.colors.textDimmed};
   transition: color 0.3s;
@@ -152,7 +177,7 @@ const Header = () => {
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -160,8 +185,12 @@ const Header = () => {
     setOpen(false);
   }, [location]);
 
+  const handleClick = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setOpen(false);
+  };
+
   const links = [
-    { to: '/', label: 'Главная' },
     { to: '/services', label: 'Услуги' },
     { to: '/calculator', label: 'Расчёт' },
     { to: '/reviews', label: 'Отзывы' },
@@ -172,7 +201,7 @@ const Header = () => {
   return (
     <HeaderWrapper scrolled={scrolled}>
       <Container>
-        <Logo to="/">
+        <Logo to="/" onClick={handleClick}>
           CLEAR<span>BREATH</span>
         </Logo>
 
@@ -188,6 +217,7 @@ const Header = () => {
               key={link.to}
               to={link.to}
               active={location.pathname === link.to}
+              onClick={handleClick}
             >
               {link.label}
             </NavLink>
@@ -195,7 +225,7 @@ const Header = () => {
         </Nav>
 
         <HeaderRight>
-          <ProfileLink to="/profile">Кабинет</ProfileLink>
+          <ProfileLink to="/profile" onClick={handleClick}>Кабинет</ProfileLink>
         </HeaderRight>
       </Container>
     </HeaderWrapper>
