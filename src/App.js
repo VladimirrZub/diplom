@@ -12,6 +12,8 @@ import Reviews from './pages/Reviews';
 import Contacts from './pages/Contacts';
 import Help from './pages/Help';
 import Cart from './pages/Cart';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import Profile from './pages/Profile';
 
 const theme = {
@@ -59,6 +61,8 @@ function App() {
                 <Route path="/contacts" element={<Contacts />} />
                 <Route path="/help" element={<Help />} />
                 <Route path="/cart" element={<Cart />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
                 <Route path="/profile" element={<Profile />} />
               </Routes>
             </Layout>

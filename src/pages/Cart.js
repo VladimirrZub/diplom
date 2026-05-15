@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { Minus, Plus, Trash2, ArrowRight } from 'lucide-react';
+import { Trash2, ArrowRight } from 'lucide-react';
 import GlassCard from '../components/UI/GlassCard';
 import Button from '../components/UI/Button';
 import { useCart } from '../context/CartContext';
@@ -48,6 +48,7 @@ const Item = styled.div`
   @media (max-width: 480px) {
     flex-direction: column;
     align-items: flex-start;
+    gap: 1rem;
   }
 `;
 
@@ -60,48 +61,28 @@ const ItemName = styled.h3`
   font-size: 1.3rem;
 `;
 
+const ItemDetails = styled.p`
+  color: ${props => props.theme.colors.textMuted};
+  font-size: 0.85rem;
+  margin-top: 0.3rem;
+  font-weight: 300;
+`;
+
 const ItemPrice = styled.div`
   font-family: ${props => props.theme.fonts.primary};
   font-size: 1.4rem;
   color: ${props => props.theme.colors.accent};
   margin-top: 0.3rem;
-`;
-
-const QtyGroup = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-`;
-
-const QtyBtn = styled.button`
-  width: 36px;
-  height: 36px;
-  background: transparent;
-  border: 1px solid ${props => props.theme.colors.borderAccent};
-  color: ${props => props.theme.colors.accent};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s;
-  
-  &:hover {
-    background: ${props => props.theme.colors.accent};
-    color: ${props => props.theme.colors.darker};
-  }
-`;
-
-const QtyValue = styled.span`
-  font-family: ${props => props.theme.fonts.primary};
-  font-size: 1.2rem;
-  min-width: 30px;
-  text-align: center;
+  white-space: nowrap;
 `;
 
 const RemoveBtn = styled.button`
   background: transparent;
   border: none;
   color: ${props => props.theme.colors.textMuted};
+  cursor: pointer;
   transition: color 0.3s;
+  flex-shrink: 0;
   
   &:hover {
     color: ${props => props.theme.colors.error};
@@ -129,7 +110,7 @@ const Empty = styled.div`
 `;
 
 const Cart = () => {
-  const { items, updateQuantity, removeFromCart, clearCart, totalPrice } = useCart();
+  const { items, removeFromCart, clearCart, totalPrice } = useCart();
 
   if (items.length === 0) {
     return (
@@ -153,15 +134,12 @@ const Cart = () => {
           <Item key={item.id}>
             <ItemInfo>
               <ItemName>{item.title}</ItemName>
-              {item.details && <p style={{ color: '#5C5850', fontSize: '0.85rem', marginTop: '0.3rem' }}>{item.details}</p>}
-              <ItemPrice>{item.price.toLocaleString()} P /шт</ItemPrice>
+              {item.details && <ItemDetails>{item.details}</ItemDetails>}
             </ItemInfo>
-            <QtyGroup>
-              <QtyBtn onClick={() => updateQuantity(item.id, item.quantity - 1)}><Minus size={16} /></QtyBtn>
-              <QtyValue>{item.quantity}</QtyValue>
-              <QtyBtn onClick={() => updateQuantity(item.id, item.quantity + 1)}><Plus size={16} /></QtyBtn>
-            </QtyGroup>
-            <RemoveBtn onClick={() => removeFromCart(item.id)}><Trash2 size={18} /></RemoveBtn>
+            <ItemPrice>{item.price.toLocaleString()} P</ItemPrice>
+            <RemoveBtn onClick={() => removeFromCart(item.id)}>
+              <Trash2 size={18} />
+            </RemoveBtn>
           </Item>
         ))}
       </GlassCard>

@@ -344,6 +344,7 @@ const DryCleaningWrapper = styled.div`
   display: grid;
   grid-template-columns: 300px 1fr;
   gap: 2rem;
+  align-items: start;
 
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
@@ -354,34 +355,15 @@ const DryCleaningSidebar = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  position: sticky;
+  top: 120px;
+  align-self: start;
 
   @media (max-width: 900px) {
+    position: static;
     flex-direction: row;
     flex-wrap: wrap;
-  }
-`;
-
-const DCCategoryBtn = styled.button`
-  text-align: left;
-  padding: 1rem 1.2rem;
-  background: ${props => props.active ? props.theme.colors.surface : 'transparent'};
-  border: 1px solid ${props => props.active ? props.theme.colors.borderAccent : props.theme.colors.border};
-  color: ${props => props.active ? props.theme.colors.accent : props.theme.colors.textDimmed};
-  font-family: ${props => props.theme.fonts.primary};
-  font-size: 1rem;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  transition: all 0.3s;
-  
-  &:hover {
-    border-color: ${props => props.theme.colors.borderAccent};
-    color: ${props => props.theme.colors.text};
-  }
-
-  @media (max-width: 900px) {
-    flex: 1;
-    min-width: 140px;
-    text-align: center;
+    margin-bottom: 1.5rem;
   }
 `;
 
@@ -411,6 +393,9 @@ const DryCleaningGrid = styled.div`
 
 const DryCleaningCard = styled(GlassCard)`
   transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   
   &:hover {
     border-color: ${props => props.theme.colors.borderAccent};
@@ -427,24 +412,26 @@ const DCIcon = styled.div`
   justify-content: center;
   color: ${props => props.theme.colors.accent};
   margin-bottom: 1.2rem;
+  flex-shrink: 0;
 `;
 
 const DCName = styled.h3`
   font-family: ${props => props.theme.fonts.primary};
   font-size: 1.3rem;
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.5rem;
 `;
 
 const DCDesc = styled.p`
   color: ${props => props.theme.colors.textDimmed};
   font-weight: 300;
   line-height: 1.6;
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem;
 `;
 
 const DCFeatures = styled.ul`
   list-style: none;
-  margin-bottom: 1.2rem;
+  margin-bottom: 0;
+  flex: 1;
 `;
 
 const DCFeature = styled.li`
@@ -470,7 +457,9 @@ const DCFooter = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 1rem;
+  margin-top: 1.2rem;
+  padding-top: 1rem;
+  border-top: 1px solid ${props => props.theme.colors.border};
 `;
 
 const DCPrice = styled.div`
@@ -488,13 +477,37 @@ const DCPrice = styled.div`
 const DCQuantity = styled.div`
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
   
   span {
     font-family: ${props => props.theme.fonts.primary};
     font-size: 1.1rem;
     color: ${props => props.theme.colors.text};
     min-width: 20px;
+    text-align: center;
+  }
+`;
+
+const DCCategoryBtn = styled.button`
+  text-align: left;
+  padding: 1rem 1.2rem;
+  background: ${props => props.active ? props.theme.colors.surface : 'transparent'};
+  border: 1px solid ${props => props.active ? props.theme.colors.borderAccent : props.theme.colors.border};
+  color: ${props => props.active ? props.theme.colors.accent : props.theme.colors.textDimmed};
+  font-family: ${props => props.theme.fonts.primary};
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.3s;
+  
+  &:hover {
+    border-color: ${props => props.theme.colors.borderAccent};
+    color: ${props => props.theme.colors.text};
+  }
+
+  @media (max-width: 900px) {
+    flex: 1;
+    min-width: 140px;
     text-align: center;
   }
 `;

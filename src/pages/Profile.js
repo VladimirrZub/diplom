@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { User, History, MessageSquare, LogOut, Edit2, Save, Star } from 'lucide-react';
 import GlassCard from '../components/UI/GlassCard';
 import Button from '../components/UI/Button';
-import Input from '../components/UI/Input';
+import FormField from '../components/UI/FormField';
 import { useAuth } from '../context/AuthContext';
 
 const Container = styled.div`
@@ -151,29 +151,17 @@ const StatusBadge = styled.span`
   }};
 `;
 
-const AuthForm = styled(GlassCard)`
-  max-width: 420px;
-  margin: 4rem auto;
-  padding: 3rem;
-`;
-
-const ErrorMsg = styled.div`
-  padding: 1rem;
-  border: 1px solid rgba(200, 75, 75, 0.3);
-  color: #C84B4B;
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
-`;
-
 const Profile = () => {
-  const { user, isAuthenticated, login, logout, updateUser } = useAuth();
+  const { user, isAuthenticated, logout, updateUser } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState('profile');
   const [edit, setEdit] = useState(false);
-  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
-  const [regForm, setRegForm] = useState({ name: '', email: '', password: '', phone: '', address: '' });
-  const [isReg, setIsReg] = useState(false);
-  const [error, setError] = useState('');
+
+  React.useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate]);
 
   const [history] = useState([
     { id: 1, title: 'Генеральная уборка', date: '15.03.2025', price: 8500, status: 'completed' },
@@ -186,66 +174,34 @@ const Profile = () => {
     { id: 1, date: '15.03.2025', rating: 5, text: 'Безупречная работа!' },
   ]);
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    setError('');
-    if (!loginForm.email || !loginForm.password) { setError('Заполните все поля'); return; }
-    login({ name: loginForm.email.split('@')[0], email: loginForm.email, phone: '+7 999 000-00-00', address: 'Не указан' });
-    setLoginForm({ email: '', password: '' });
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
-  const handleReg = (e) => {
-    e.preventDefault();
-    setError('');
-    if (!regForm.email || !regForm.password || !regForm.name) { setError('Заполните обязательные поля'); return; }
-    login({ name: regForm.name, email: regForm.email, phone: regForm.phone || 'Не указан', address: regForm.address || 'Не указан' });
-    setRegForm({ name: '', email: '', password: '', phone: '', address: '' });
-    setIsReg(false);
-  };
-
-  if (!isAuthenticated) {
-    return (
-      <Container>
-        <Header><Label>Account</Label><Title>Личный кабинет</Title></Header>
-        {isReg ? (
-          <AuthForm>
-            <h2 style={{ fontFamily: '"Cormorant Garamond", serif', textAlign: 'center', marginBottom: '2rem', fontSize: '1.8rem' }}>Регистрация</h2>
-            {error && <ErrorMsg>{error}</ErrorMsg>}
-            <form onSubmit={handleReg}>
-              <Input label="Имя *" value={regForm.name} onChange={e => setRegForm({ ...regForm, name: e.target.value })} required />
-              <Input label="Email *" type="email" value={regForm.email} onChange={e => setRegForm({ ...regForm, email: e.target.value })} required />
-              <Input label="Телефон" value={regForm.phone} onChange={e => setRegForm({ ...regForm, phone: e.target.value })} />
-              <Input label="Адрес" value={regForm.address} onChange={e => setRegForm({ ...regForm, address: e.target.value })} />
-              <Input label="Пароль *" type="password" value={regForm.password} onChange={e => setRegForm({ ...regForm, password: e.target.value })} required />
-              <Button type="submit" style={{ width: '100%', justifyContent: 'center', marginBottom: '1rem' }}>Зарегистрироваться</Button>
-            </form>
-            <p style={{ textAlign: 'center', color: '#8B8478', cursor: 'pointer' }} onClick={() => setIsReg(false)}>Уже есть аккаунт? Войти</p>
-          </AuthForm>
-        ) : (
-          <AuthForm>
-            <h2 style={{ fontFamily: '"Cormorant Garamond", serif', textAlign: 'center', marginBottom: '2rem', fontSize: '1.8rem' }}>Вход</h2>
-            {error && <ErrorMsg>{error}</ErrorMsg>}
-            <form onSubmit={handleLogin}>
-              <Input label="Email" type="email" value={loginForm.email} onChange={e => setLoginForm({ ...loginForm, email: e.target.value })} required />
-              <Input label="Пароль" type="password" value={loginForm.password} onChange={e => setLoginForm({ ...loginForm, password: e.target.value })} required />
-              <Button type="submit" style={{ width: '100%', justifyContent: 'center', marginBottom: '1rem' }}>Войти</Button>
-            </form>
-            <p style={{ textAlign: 'center', color: '#8B8478', cursor: 'pointer' }} onClick={() => setIsReg(true)}>Нет аккаунта? Зарегистрироваться</p>
-          </AuthForm>
-        )}
-      </Container>
-    );
-  }
+  if (!isAuthenticated) return null;
 
   return (
     <Container>
-      <Header><Label>Account</Label><Title>Личный кабинет</Title></Header>
+      <Header>
+        <Label>Account</Label>
+        <Title>Личный кабинет</Title>
+      </Header>
+      
       <Layout>
         <Sidebar>
-          <SideBtn active={tab === 'profile'} onClick={() => setTab('profile')}><User size={18} /> Профиль</SideBtn>
-          <SideBtn active={tab === 'history'} onClick={() => setTab('history')}><History size={18} /> История услуг</SideBtn>
-          <SideBtn active={tab === 'reviews'} onClick={() => setTab('reviews')}><MessageSquare size={18} /> Мои отзывы</SideBtn>
-          <SideBtn onClick={() => { logout(); navigate('/'); }}><LogOut size={18} /> Выйти</SideBtn>
+          <SideBtn active={tab === 'profile'} onClick={() => setTab('profile')}>
+            <User size={18} /> Профиль
+          </SideBtn>
+          <SideBtn active={tab === 'history'} onClick={() => setTab('history')}>
+            <History size={18} /> История услуг
+          </SideBtn>
+          <SideBtn active={tab === 'reviews'} onClick={() => setTab('reviews')}>
+            <MessageSquare size={18} /> Мои отзывы
+          </SideBtn>
+          <SideBtn onClick={handleLogout}>
+            <LogOut size={18} /> Выйти
+          </SideBtn>
         </Sidebar>
 
         <Content>
@@ -253,16 +209,20 @@ const Profile = () => {
             <Section>
               <SectionTitle>
                 Личные данные
-                <Button variant="outline" size="small" onClick={() => { if (edit) updateUser(user); setEdit(!edit); }}>
+                <Button
+                  variant="outline"
+                  size="small"
+                  onClick={() => { if (edit) updateUser(user); setEdit(!edit); }}
+                >
                   {edit ? <Save size={16} /> : <Edit2 size={16} />}
                   {edit ? 'Сохранить' : 'Редактировать'}
                 </Button>
               </SectionTitle>
               <FormGrid>
-                <Input label="ФИО" value={user.name} onChange={e => updateUser({ ...user, name: e.target.value })} disabled={!edit} />
-                <Input label="Телефон" value={user.phone} onChange={e => updateUser({ ...user, phone: e.target.value })} disabled={!edit} />
-                <Input label="Email" type="email" value={user.email} onChange={e => updateUser({ ...user, email: e.target.value })} disabled={!edit} />
-                <Input label="Адрес" value={user.address} onChange={e => updateUser({ ...user, address: e.target.value })} disabled={!edit} />
+                <FormField label="ФИО" value={user.name} onChange={e => updateUser({ ...user, name: e.target.value })} disabled={!edit} />
+                <FormField label="Телефон" value={user.phone} onChange={e => updateUser({ ...user, phone: e.target.value })} disabled={!edit} />
+                <FormField label="Email" type="email" value={user.email} onChange={e => updateUser({ ...user, email: e.target.value })} disabled={!edit} />
+                <FormField label="Адрес" value={user.address} onChange={e => updateUser({ ...user, address: e.target.value })} disabled={!edit} />
               </FormGrid>
             </Section>
           )}
