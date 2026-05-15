@@ -9,17 +9,22 @@ import { useCart } from '../context/CartContext'
 const Container = styled.div`
 	max-width: 1300px;
 	margin: 0 auto;
-	padding: 2rem 3rem;
+	padding: 1rem 1rem;
 
-	@media (max-width: 768px) {
-		padding: 1.5rem;
+	@media (min-width: 768px) {
+		padding: 2rem 3rem;
 	}
 `
 
 const Header = styled.div`
 	text-align: center;
-	margin-bottom: 4rem;
-	padding-top: 3rem;
+	margin-bottom: 3rem;
+	padding-top: 2rem;
+
+	@media (min-width: 768px) {
+		margin-bottom: 4rem;
+		padding-top: 3rem;
+	}
 `
 
 const Label = styled.div`
@@ -28,65 +33,78 @@ const Label = styled.div`
 	letter-spacing: 0.25em;
 	text-transform: uppercase;
 	color: ${props => props.theme.colors.accent};
-	margin-bottom: 1.5rem;
+	margin-top: 2.5rem;
 `
 
 const Title = styled.h1`
 	font-family: ${props => props.theme.fonts.primary};
-	font-size: 3.5rem;
+	font-size: 2.5rem;
 	font-weight: 700;
 
-	@media (max-width: 480px) {
-		font-size: 2.2rem;
+	@media (min-width: 768px) {
+		font-size: 3.5rem;
 	}
 `
 
 const CalcLayout = styled.div`
 	display: grid;
-	grid-template-columns: 1fr 380px;
-	gap: 2rem;
-	align-items: start;
+	grid-template-columns: 1fr;
+	gap: 1.5rem;
 
-	@media (max-width: 900px) {
-		grid-template-columns: 1fr;
+	@media (min-width: 900px) {
+		grid-template-columns: 1fr 380px;
+		gap: 2rem;
 	}
 `
 
 const MainPanel = styled.div``
 
 const SidePanel = styled.div`
-	position: sticky;
-	top: 100px;
-
-	@media (max-width: 900px) {
-		position: static;
+	@media (min-width: 900px) {
+		position: sticky;
+		top: 100px;
 	}
 `
 
 const OptionsBlock = styled(GlassCard)`
-	margin-top: 2rem;
+	margin-top: 1.5rem;
 `
 
 const BlockTitle = styled.h3`
 	font-family: ${props => props.theme.fonts.primary};
-	font-size: 1.3rem;
-	margin-bottom: 1.5rem;
+	font-size: 1.1rem;
+	margin-bottom: 1.2rem;
 	letter-spacing: 0.04em;
+
+	@media (min-width: 768px) {
+		font-size: 1.3rem;
+		margin-bottom: 1.5rem;
+	}
 `
 
 const RoomsRow = styled.div`
 	display: flex;
 	align-items: center;
-	gap: 1.5rem;
-	margin-bottom: 2rem;
+	gap: 1rem;
+	margin-bottom: 1.5rem;
 	flex-wrap: wrap;
+
+	@media (min-width: 768px) {
+		gap: 1.5rem;
+		margin-bottom: 2rem;
+	}
 `
 
 const RoomsLabel = styled.span`
 	color: ${props => props.theme.colors.textDimmed};
 	font-family: ${props => props.theme.fonts.primary};
-	font-size: 1rem;
-	min-width: 160px;
+	font-size: 0.9rem;
+	min-width: 140px;
+
+	@media (min-width: 768px) {
+		font-size: 1rem;
+		min-width: 160px;
+	}
 `
 
 const RoomsControl = styled.div`
@@ -96,8 +114,8 @@ const RoomsControl = styled.div`
 `
 
 const RoomBtn = styled.button`
-	width: 44px;
-	height: 44px;
+	width: 40px;
+	height: 40px;
 	background: transparent;
 	border: none;
 	color: ${props => props.theme.colors.text};
@@ -116,32 +134,47 @@ const RoomBtn = styled.button`
 		opacity: 0.3;
 		cursor: not-allowed;
 	}
+
+	@media (min-width: 768px) {
+		width: 44px;
+		height: 44px;
+	}
 `
 
 const RoomValue = styled.div`
-	width: 50px;
-	height: 44px;
+	width: 45px;
+	height: 40px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	font-family: ${props => props.theme.fonts.primary};
-	font-size: 1.2rem;
+	font-size: 1.1rem;
 	color: ${props => props.theme.colors.accent};
 	border-left: 1px solid ${props => props.theme.colors.border};
 	border-right: 1px solid ${props => props.theme.colors.border};
+
+	@media (min-width: 768px) {
+		width: 50px;
+		height: 44px;
+		font-size: 1.2rem;
+	}
 `
 
 const ExtrasList = styled.div`
 	display: flex;
 	flex-direction: column;
-	gap: 0.8rem;
+	gap: 0.6rem;
+
+	@media (min-width: 768px) {
+		gap: 0.8rem;
+	}
 `
 
 const ExtraItem = styled.label`
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 1rem;
+	padding: 0.8rem;
 	border: 1px solid
 		${props =>
 			props.checked
@@ -155,6 +188,10 @@ const ExtraItem = styled.label`
 	&:hover {
 		border-color: ${props => props.theme.colors.borderAccent};
 	}
+
+	@media (min-width: 768px) {
+		padding: 1rem;
+	}
 `
 
 const ExtraInfo = styled.div`
@@ -163,22 +200,35 @@ const ExtraInfo = styled.div`
 
 const ExtraName = styled.div`
 	color: ${props => props.theme.colors.text};
-	font-size: 0.95rem;
+	font-size: 0.85rem;
+
+	@media (min-width: 768px) {
+		font-size: 0.95rem;
+	}
 `
 
 const ExtraDesc = styled.div`
 	color: ${props => props.theme.colors.textMuted};
-	font-size: 0.8rem;
+	font-size: 0.75rem;
 	margin-top: 0.2rem;
+
+	@media (min-width: 768px) {
+		font-size: 0.8rem;
+	}
 `
 
 const ExtraPrice = styled.div`
 	color: ${props => props.theme.colors.accent};
 	font-family: ${props => props.theme.fonts.primary};
-	font-size: 1.1rem;
+	font-size: 0.95rem;
 	font-weight: 600;
-	margin-right: 1rem;
+	margin-right: 0.8rem;
 	white-space: nowrap;
+
+	@media (min-width: 768px) {
+		font-size: 1.1rem;
+		margin-right: 1rem;
+	}
 `
 
 const HiddenCheckbox = styled.input`
@@ -186,8 +236,8 @@ const HiddenCheckbox = styled.input`
 `
 
 const CheckIndicator = styled.div`
-	width: 20px;
-	height: 20px;
+	width: 18px;
+	height: 18px;
 	border: 2px solid
 		${props =>
 			props.checked ? props.theme.colors.accent : props.theme.colors.border};
@@ -200,8 +250,18 @@ const CheckIndicator = styled.div`
 	svg {
 		opacity: ${props => (props.checked ? 1 : 0)};
 		color: ${props => props.theme.colors.accent};
-		width: 14px;
-		height: 14px;
+		width: 12px;
+		height: 12px;
+	}
+
+	@media (min-width: 768px) {
+		width: 20px;
+		height: 20px;
+
+		svg {
+			width: 14px;
+			height: 14px;
+		}
 	}
 `
 
@@ -211,7 +271,7 @@ const PriceCard = styled(GlassCard)`
 
 const PriceLabel = styled.div`
 	color: ${props => props.theme.colors.textDimmed};
-	font-size: 0.85rem;
+	font-size: 0.8rem;
 	margin-bottom: 0.5rem;
 	text-transform: uppercase;
 	letter-spacing: 0.1em;
@@ -220,25 +280,25 @@ const PriceLabel = styled.div`
 
 const PriceValue = styled.div`
 	font-family: ${props => props.theme.fonts.primary};
-	font-size: 3.5rem;
+	font-size: 2.5rem;
 	font-weight: 700;
 	color: ${props => props.theme.colors.accent};
 	margin-bottom: 0.5rem;
 
-	@media (max-width: 480px) {
-		font-size: 2.5rem;
+	@media (min-width: 768px) {
+		font-size: 3.5rem;
 	}
 `
 
 const PriceUnit = styled.div`
 	color: ${props => props.theme.colors.textMuted};
-	font-size: 0.9rem;
+	font-size: 0.85rem;
 	margin-bottom: 1.5rem;
 `
 
 const PriceBreakdown = styled.div`
 	text-align: left;
-	padding: 1.2rem 0;
+	padding: 1rem 0;
 	border-top: 1px solid ${props => props.theme.colors.border};
 	border-bottom: 1px solid ${props => props.theme.colors.border};
 	margin-bottom: 1.5rem;
@@ -247,17 +307,28 @@ const PriceBreakdown = styled.div`
 const BreakdownRow = styled.div`
 	display: flex;
 	justify-content: space-between;
-	padding: 0.4rem 0;
+	padding: 0.3rem 0;
 	color: ${props => props.theme.colors.textDimmed};
-	font-size: 0.85rem;
+	font-size: 0.8rem;
+
+	@media (min-width: 768px) {
+		font-size: 0.85rem;
+		padding: 0.4rem 0;
+	}
 
 	&.total {
 		color: ${props => props.theme.colors.text};
 		font-weight: 500;
-		font-size: 0.95rem;
-		padding-top: 0.6rem;
+		font-size: 0.9rem;
+		padding-top: 0.5rem;
 		border-top: 1px solid ${props => props.theme.colors.border};
-		margin-top: 0.4rem;
+		margin-top: 0.3rem;
+
+		@media (min-width: 768px) {
+			font-size: 0.95rem;
+			padding-top: 0.6rem;
+			margin-top: 0.4rem;
+		}
 	}
 `
 
@@ -460,7 +531,7 @@ const Calculator = () => {
 
 			<CalcLayout>
 				<MainPanel>
-					<GlassCard padding='2.5rem'>
+					<GlassCard padding='1.5rem'>
 						<Input
 							label='Тип услуги'
 							select
