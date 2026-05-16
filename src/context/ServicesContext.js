@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, {
+	createContext,
+	useContext,
+	useState,
+	useEffect,
+	useRef,
+} from 'react'
 import { db } from '../firebase/config'
 import {
 	collection,
@@ -20,11 +26,77 @@ export const useServices = () => {
 }
 
 const defaultServices = [
-	// ====== УБОРКА - РЕГУЛЯРНАЯ ======
+	// ====== УБОРКА - БАЗОВЫЕ ТИПЫ ======
+	{
+		name: 'Регулярная уборка',
+		category: 'cleaning',
+		type: 'base',
+		subtype: 'regular',
+		price: 3500,
+		unit: '1-комнатная квартира',
+		isBase: true,
+		features: [
+			'Влажная уборка полов и плинтусов',
+			'Протирка всех доступных поверхностей от пыли',
+			'Уборка кухни (плита, мойка, столешницы)',
+			'Чистка санузла (ванна, унитаз, раковина)',
+			'Вынос мусора',
+			'Мытьё зеркал и стеклянных поверхностей',
+			'Чистка розеток и выключателей',
+			'Протирка дверей и дверных ручек',
+			'Уборка под кроватями и за мебелью',
+		],
+	},
+	{
+		name: 'Генеральная уборка',
+		category: 'cleaning',
+		type: 'base',
+		subtype: 'general',
+		price: 8000,
+		unit: '1-комнатная квартира',
+		isBase: true,
+		features: [
+			'Всё из регулярной уборки',
+			'Мытьё окон с двух сторон',
+			'Чистка вытяжки и кухонной техники',
+			'Уборка внутри всех шкафов и ящиков',
+			'Влажная чистка радиаторов отопления',
+			'Удаление накипи с сантехники',
+			'Чистка межплиточных швов',
+			'Мытьё осветительных приборов',
+			'Чистка плинтусов и карнизов',
+			'Влажная чистка матраса',
+			'Дезинфекция санузла',
+			'Полировка зеркал и хромированных поверхностей',
+		],
+	},
+	{
+		name: 'Уборка после ремонта',
+		category: 'cleaning',
+		type: 'base',
+		subtype: 'afterRepair',
+		price: 12000,
+		unit: '1-комнатная квартира',
+		isBase: true,
+		features: [
+			'Удаление строительной пыли со всех поверхностей',
+			'Влажная уборка полов (3 цикла до идеальной чистоты)',
+			'Очистка оконных рам и стёкол от следов ремонта',
+			'Уборка осветительных приборов',
+			'Очистка розеток и выключателей',
+			'Вынос строительного мусора (до 20 кг)',
+			'Финальная полировка всех поверхностей',
+			'Очистка радиаторов от строительной пыли',
+			'Мытьё дверей и дверных коробок',
+		],
+	},
+
+	// ====== УБОРКА - ДОПЫ (РЕГУЛЯРНАЯ) ======
 	{
 		name: 'Мытьё окон',
 		category: 'cleaning',
-		type: 'regular',
+		type: 'extra',
+		subtype: 'regular',
 		price: 1500,
 		unit: 'за окно, с двух сторон',
 		features: ['Мытьё стёкол', 'Мытьё рам', 'Мытьё подоконников'],
@@ -32,7 +104,8 @@ const defaultServices = [
 	{
 		name: 'Мытьё холодильника',
 		category: 'cleaning',
-		type: 'regular',
+		type: 'extra',
+		subtype: 'regular',
 		price: 800,
 		unit: 'внутри и снаружи',
 		features: ['Разморозка', 'Мытьё полок', 'Мытьё уплотнителей'],
@@ -40,61 +113,64 @@ const defaultServices = [
 	{
 		name: 'Чистка духовки',
 		category: 'cleaning',
-		type: 'regular',
+		type: 'extra',
+		subtype: 'regular',
 		price: 1200,
 		unit: 'включая противни и решётки',
-		features: [
-			'Очистка внутренней камеры',
-			'Чистка противней',
-			'Чистка решёток',
-		],
+		features: ['Очистка камеры', 'Чистка противней', 'Чистка решёток'],
 	},
 	{
 		name: 'Чистка микроволновки',
 		category: 'cleaning',
-		type: 'regular',
+		type: 'extra',
+		subtype: 'regular',
 		price: 400,
 		unit: 'внутри и снаружи',
-		features: ['Мытьё внутренней камеры', 'Чистка поддона', 'Протирка корпуса'],
+		features: ['Мытьё камеры', 'Чистка поддона', 'Протирка корпуса'],
 	},
 	{
 		name: 'Уборка балкона',
 		category: 'cleaning',
-		type: 'regular',
+		type: 'extra',
+		subtype: 'regular',
 		price: 1000,
-		unit: 'влажная уборка, протирка окон',
+		unit: 'влажная уборка',
 		features: ['Мытьё пола', 'Протирка окон', 'Удаление пыли'],
 	},
 	{
 		name: 'Уборка внутри шкафов',
 		category: 'cleaning',
-		type: 'regular',
+		type: 'extra',
+		subtype: 'regular',
 		price: 600,
-		unit: 'за шкаф, без вещей',
+		unit: 'за шкаф',
 		features: ['Протирка полок', 'Удаление пыли', 'Обработка углов'],
 	},
 
-	// ====== УБОРКА - ГЕНЕРАЛЬНАЯ ======
+	// ====== УБОРКА - ДОПЫ (ГЕНЕРАЛЬНАЯ) ======
 	{
 		name: 'Мытьё окон (сложный доступ)',
 		category: 'cleaning',
-		type: 'general',
+		type: 'extra',
+		subtype: 'general',
 		price: 2500,
-		unit: 'за окно, высота, сложная конструкция',
+		unit: 'за окно',
 		features: ['Работа на высоте', 'Сложная конструкция', 'Спецснаряжение'],
 	},
 	{
 		name: 'Разморозка и мытьё холодильника',
 		category: 'cleaning',
-		type: 'general',
+		type: 'extra',
+		subtype: 'general',
 		price: 1500,
-		unit: 'полная разморозка и очистка',
-		features: ['Полная разморозка', 'Мытьё всех отсеков', 'Сушка'],
+		unit: 'полная разморозка',
+		features: ['Полная разморозка', 'Мытьё отсеков', 'Сушка'],
 	},
 	{
 		name: 'Паровая чистка духовки',
 		category: 'cleaning',
-		type: 'general',
+		type: 'extra',
+		subtype: 'general',
 		price: 2000,
 		unit: 'глубокая очистка паром',
 		features: ['Паровой удар', 'Удаление нагара', 'Дезинфекция'],
@@ -102,49 +178,55 @@ const defaultServices = [
 	{
 		name: 'Чистка кондиционера',
 		category: 'cleaning',
-		type: 'general',
+		type: 'extra',
+		subtype: 'general',
 		price: 1800,
-		unit: 'внешняя и внутренняя очистка',
+		unit: 'внешняя и внутренняя',
 		features: ['Чистка фильтров', 'Обработка испарителя', 'Дезинфекция'],
 	},
 	{
 		name: 'Генеральная уборка балкона',
 		category: 'cleaning',
-		type: 'general',
+		type: 'extra',
+		subtype: 'general',
 		price: 2500,
-		unit: 'включая мытьё рам и остекления',
+		unit: 'мытьё рам и остекления',
 		features: ['Мытьё рам', 'Чистка остекления', 'Уборка пола'],
 	},
 	{
 		name: 'Уборка кухонных шкафов',
 		category: 'cleaning',
-		type: 'general',
+		type: 'extra',
+		subtype: 'general',
 		price: 2000,
-		unit: 'все шкафы, включая посуду',
+		unit: 'все шкафы с посудой',
 		features: ['Мытьё полок', 'Протирка посуды', 'Организация'],
 	},
 	{
 		name: 'Мытьё стен',
 		category: 'cleaning',
-		type: 'general',
+		type: 'extra',
+		subtype: 'general',
 		price: 3000,
-		unit: 'все стены, без обоев под покраску',
+		unit: 'все стены',
 		features: ['Влажная уборка', 'Удаление пятен', 'Без разводов'],
 	},
 
-	// ====== УБОРКА - ПОСЛЕ РЕМОНТА ======
+	// ====== УБОРКА - ДОПЫ (ПОСЛЕ РЕМОНТА) ======
 	{
 		name: 'Вынос крупного мусора',
 		category: 'cleaning',
-		type: 'afterRepair',
+		type: 'extra',
+		subtype: 'afterRepair',
 		price: 3000,
-		unit: 'до 100 кг, мешки включены',
+		unit: 'до 100 кг',
 		features: ['Мешки включены', 'Погрузка', 'Вынос'],
 	},
 	{
 		name: 'Удаление следов краски',
 		category: 'cleaning',
-		type: 'afterRepair',
+		type: 'extra',
+		subtype: 'afterRepair',
 		price: 5000,
 		unit: 'с полов, окон, дверей',
 		features: ['Спецсредства', 'Бережное удаление', 'Без повреждений'],
@@ -152,25 +234,28 @@ const defaultServices = [
 	{
 		name: 'Глубокая очистка швов',
 		category: 'cleaning',
-		type: 'afterRepair',
+		type: 'extra',
+		subtype: 'afterRepair',
 		price: 4000,
-		unit: 'химическая очистка межплиточных швов',
+		unit: 'межплиточные швы',
 		features: ['Химическая очистка', 'Восстановление цвета', 'Защита'],
 	},
 	{
 		name: 'Чистка вентиляции',
 		category: 'cleaning',
-		type: 'afterRepair',
+		type: 'extra',
+		subtype: 'afterRepair',
 		price: 2500,
-		unit: 'профессиональная очистка каналов',
+		unit: 'очистка каналов',
 		features: ['Очистка каналов', 'Удаление пыли', 'Проверка тяги'],
 	},
 	{
 		name: 'Полировка полов',
 		category: 'cleaning',
-		type: 'afterRepair',
+		type: 'extra',
+		subtype: 'afterRepair',
 		price: 3500,
-		unit: 'машинная полировка твёрдых покрытий',
+		unit: 'машинная полировка',
 		features: ['Полировка', 'Защитное покрытие', 'Блеск'],
 	},
 
@@ -184,7 +269,7 @@ const defaultServices = [
 		features: [
 			'Деликатная чистка',
 			'Удаление пятен',
-			'Восстановление водоотталкивающей пропитки',
+			'Восстановление пропитки',
 		],
 	},
 	{
@@ -205,11 +290,7 @@ const defaultServices = [
 		type: 'clothing',
 		price: 2200,
 		unit: 'за изделие',
-		features: [
-			'Ручная обработка деликатных тканей',
-			'Удаление сложных пятен',
-			'Сохранение декора',
-		],
+		features: ['Ручная обработка', 'Удаление пятен', 'Сохранение декора'],
 	},
 	{
 		name: 'Блуза / рубашка',
@@ -217,7 +298,7 @@ const defaultServices = [
 		type: 'clothing',
 		price: 700,
 		unit: 'за изделие',
-		features: ['Чистка воротника и манжет', 'Глажка', 'Упаковка на плечиках'],
+		features: ['Чистка воротника', 'Глажка', 'Упаковка'],
 	},
 	{
 		name: 'Трикотаж / свитер',
@@ -225,11 +306,7 @@ const defaultServices = [
 		type: 'clothing',
 		price: 900,
 		unit: 'за изделие',
-		features: [
-			'Бережная чистка',
-			'Сохранение формы',
-			'Антистатическая обработка',
-		],
+		features: ['Бережная чистка', 'Сохранение формы', 'Антистатик'],
 	},
 	{
 		name: 'Юбка',
@@ -247,7 +324,7 @@ const defaultServices = [
 		type: 'curtains',
 		price: 900,
 		unit: 'за полотно',
-		features: ['Деликатная стирка', 'Сушка в расправленном виде', 'Глажка'],
+		features: ['Деликатная стирка', 'Сушка', 'Глажка'],
 	},
 	{
 		name: 'Портьеры (до 3 м)',
@@ -255,11 +332,7 @@ const defaultServices = [
 		type: 'curtains',
 		price: 1800,
 		unit: 'за полотно',
-		features: [
-			'Чистка с учётом типа ткани',
-			'Снятие и навеска',
-			'Обработка от пылевых клещей',
-		],
+		features: ['Чистка по типу ткани', 'Снятие/навеска', 'От клещей'],
 	},
 	{
 		name: 'Блэкаут шторы',
@@ -267,11 +340,7 @@ const defaultServices = [
 		type: 'curtains',
 		price: 2200,
 		unit: 'за полотно',
-		features: [
-			'Специальная чистка',
-			'Сохранение светонепроницаемости',
-			'Снятие и навеска',
-		],
+		features: ['Спецчистка', 'Сохранение свойств', 'Снятие/навеска'],
 	},
 	{
 		name: 'Плед / покрывало',
@@ -279,11 +348,7 @@ const defaultServices = [
 		type: 'curtains',
 		price: 1500,
 		unit: 'за изделие',
-		features: [
-			'Глубокая чистка',
-			'Удаление катышков',
-			'Антистатическая обработка',
-		],
+		features: ['Глубокая чистка', 'Удаление катышков', 'Антистатик'],
 	},
 	{
 		name: 'Декоративные подушки',
@@ -291,7 +356,7 @@ const defaultServices = [
 		type: 'curtains',
 		price: 600,
 		unit: 'за штуку',
-		features: ['Чистка чехла', 'Обработка наполнителя', 'Восстановление формы'],
+		features: ['Чистка чехла', 'Обработка наполнителя', 'Форма'],
 	},
 
 	// ====== ХИМЧИСТКА - МЕБЕЛЬ ======
@@ -301,12 +366,7 @@ const defaultServices = [
 		type: 'furniture',
 		price: 3500,
 		unit: 'за изделие',
-		features: [
-			'Глубокая экстракция',
-			'Удаление пятен',
-			'Дезодорация',
-			'Антибактериальная обработка',
-		],
+		features: ['Экстракция', 'Удаление пятен', 'Дезодорация', 'Антибактерии'],
 	},
 	{
 		name: 'Диван 3-местный',
@@ -314,12 +374,7 @@ const defaultServices = [
 		type: 'furniture',
 		price: 5000,
 		unit: 'за изделие',
-		features: [
-			'Глубокая экстракция',
-			'Удаление пятен',
-			'Дезодорация',
-			'Защитное покрытие',
-		],
+		features: ['Экстракция', 'Удаление пятен', 'Дезодорация', 'Защита'],
 	},
 	{
 		name: 'Кресло',
@@ -327,7 +382,7 @@ const defaultServices = [
 		type: 'furniture',
 		price: 2000,
 		unit: 'за изделие',
-		features: ['Чистка обивки', 'Обработка подлокотников', 'Дезодорация'],
+		features: ['Чистка обивки', 'Подлокотники', 'Дезодорация'],
 	},
 	{
 		name: 'Матрас',
@@ -335,12 +390,7 @@ const defaultServices = [
 		type: 'furniture',
 		price: 3000,
 		unit: 'за изделие',
-		features: [
-			'Глубокая чистка',
-			'Удаление пылевых клещей',
-			'УФ-обработка',
-			'Дезодорация',
-		],
+		features: ['Глубокая чистка', 'От клещей', 'УФ-обработка', 'Дезодорация'],
 	},
 	{
 		name: 'Стул (обивка)',
@@ -348,7 +398,7 @@ const defaultServices = [
 		type: 'furniture',
 		price: 800,
 		unit: 'за штуку',
-		features: ['Чистка сиденья и спинки', 'Удаление пятен', 'Быстрая сушка'],
+		features: ['Чистка сиденья', 'Удаление пятен', 'Сушка'],
 	},
 	{
 		name: 'Изголовье кровати',
@@ -356,7 +406,7 @@ const defaultServices = [
 		type: 'furniture',
 		price: 1500,
 		unit: 'за изделие',
-		features: ['Чистка обивки', 'Удаление пятен', 'Антистатическая обработка'],
+		features: ['Чистка обивки', 'Удаление пятен', 'Антистатик'],
 	},
 
 	// ====== ХИМЧИСТКА - КОВРЫ ======
@@ -366,12 +416,7 @@ const defaultServices = [
 		type: 'carpets',
 		price: 1800,
 		unit: 'за изделие',
-		features: [
-			'Глубокая чистка',
-			'Вывоз и доставка',
-			'Сушка в цеху',
-			'Антистатическая обработка',
-		],
+		features: ['Глубокая чистка', 'Вывоз/доставка', 'Сушка', 'Антистатик'],
 	},
 	{
 		name: 'Ковёр 6-12 м2',
@@ -379,12 +424,7 @@ const defaultServices = [
 		type: 'carpets',
 		price: 3500,
 		unit: 'за изделие',
-		features: [
-			'Глубокая чистка',
-			'Вывоз и доставка',
-			'Сушка в цеху',
-			'Защитная пропитка',
-		],
+		features: ['Глубокая чистка', 'Вывоз/доставка', 'Сушка', 'Защита'],
 	},
 	{
 		name: 'Ковёр от 12 м2',
@@ -392,12 +432,7 @@ const defaultServices = [
 		type: 'carpets',
 		price: 6000,
 		unit: 'за изделие',
-		features: [
-			'Глубокая чистка',
-			'Вывоз и доставка',
-			'Сушка в цеху',
-			'Полное восстановление ворса',
-		],
+		features: ['Глубокая чистка', 'Вывоз/доставка', 'Сушка', 'Восстановление'],
 	},
 	{
 		name: 'Шерстяной ковёр',
@@ -408,8 +443,8 @@ const defaultServices = [
 		features: [
 			'Деликатная чистка',
 			'Сохранение цвета',
-			'Ручная обработка',
-			'Кондиционирование ворса',
+			'Ручная',
+			'Кондиционер',
 		],
 	},
 	{
@@ -420,9 +455,9 @@ const defaultServices = [
 		unit: 'за м2',
 		features: [
 			'Ручная чистка',
-			'pH-нейтральные средства',
+			'pH-нейтрально',
 			'Сохранение блеска',
-			'Индивидуальный подход',
+			'Индивидуально',
 		],
 	},
 
@@ -437,7 +472,7 @@ const defaultServices = [
 			'Глубокая чистка',
 			'Восстановление цвета',
 			'Полировка',
-			'Защитная пропитка',
+			'Защита',
 		],
 	},
 	{
@@ -450,7 +485,7 @@ const defaultServices = [
 			'Сухая чистка',
 			'Восстановление ворса',
 			'Защита от влаги',
-			'Удаление пятен',
+			'Пятна',
 		],
 	},
 	{
@@ -459,12 +494,7 @@ const defaultServices = [
 		type: 'shoes',
 		price: 1500,
 		unit: 'за пару',
-		features: [
-			'Глубокая чистка',
-			'Отбеливание подошвы',
-			'Дезодорация',
-			'Чистка шнурков',
-		],
+		features: ['Глубокая чистка', 'Отбеливание', 'Дезодорация', 'Шнурки'],
 	},
 	{
 		name: 'Сапоги / ботинки',
@@ -472,12 +502,7 @@ const defaultServices = [
 		type: 'shoes',
 		price: 2500,
 		unit: 'за пару',
-		features: [
-			'Полная чистка',
-			'Восстановление кожи',
-			'Защитная пропитка',
-			'Полировка',
-		],
+		features: ['Полная чистка', 'Восстановление кожи', 'Защита', 'Полировка'],
 	},
 
 	// ====== ХИМЧИСТКА - СТИРКА И ГЛАЖКА ======
@@ -487,12 +512,7 @@ const defaultServices = [
 		type: 'laundry',
 		price: 1500,
 		unit: 'за комплект',
-		features: [
-			'Сортировка по цвету и ткани',
-			'Правильный режим стирки',
-			'Сушка',
-			'Глажка и упаковка',
-		],
+		features: ['Сортировка', 'Стирка', 'Сушка', 'Глажка'],
 	},
 	{
 		name: 'Стирка + глажка (до 10 кг)',
@@ -500,12 +520,7 @@ const defaultServices = [
 		type: 'laundry',
 		price: 2500,
 		unit: 'за комплект',
-		features: [
-			'Сортировка по цвету и ткани',
-			'Правильный режим стирки',
-			'Сушка',
-			'Глажка и упаковка',
-		],
+		features: ['Сортировка', 'Стирка', 'Сушка', 'Глажка'],
 	},
 	{
 		name: 'Деликатная стирка',
@@ -513,12 +528,7 @@ const defaultServices = [
 		type: 'laundry',
 		price: 2000,
 		unit: 'до 5 кг',
-		features: [
-			'Ручная стирка деликатных тканей',
-			'Специальные средства',
-			'Сушка в расправленном виде',
-			'Бережная глажка',
-		],
+		features: ['Ручная стирка', 'Спецсредства', 'Сушка', 'Глажка'],
 	},
 	{
 		name: 'Только глажка',
@@ -526,11 +536,7 @@ const defaultServices = [
 		type: 'laundry',
 		price: 1000,
 		unit: 'до 5 кг',
-		features: [
-			'Глажка на профессиональном оборудовании',
-			'Складные вещи или на плечиках',
-			'Упаковка',
-		],
+		features: ['Профоборудование', 'На плечиках', 'Упаковка'],
 	},
 	{
 		name: 'Постельное бельё',
@@ -538,11 +544,7 @@ const defaultServices = [
 		type: 'laundry',
 		price: 800,
 		unit: 'за комплект',
-		features: [
-			'Стирка при высокой температуре',
-			'Глажка',
-			'Аккуратное складывание',
-		],
+		features: ['Стирка', 'Глажка', 'Складывание'],
 	},
 	{
 		name: 'Полотенца / халаты',
@@ -550,16 +552,20 @@ const defaultServices = [
 		type: 'laundry',
 		price: 600,
 		unit: 'до 5 шт',
-		features: ['Стирка с кондиционером', 'Сушка', 'Пушистое складывание'],
+		features: ['Стирка', 'Кондиционер', 'Сушка', 'Складывание'],
 	},
 ]
 
 export const ServicesProvider = ({ children }) => {
 	const [services, setServices] = useState([])
 	const [loading, setLoading] = useState(true)
+	const initialized = useRef(false)
 
 	useEffect(() => {
-		initializeServices()
+		if (!initialized.current) {
+			initialized.current = true
+			initializeServices()
+		}
 	}, [])
 
 	const initializeServices = async () => {
@@ -576,73 +582,47 @@ export const ServicesProvider = ({ children }) => {
 					})
 				})
 				await batch.commit()
-				console.log('Default services added to Firebase')
+				console.log('Default services added')
 			}
 
 			await fetchServices()
 		} catch (error) {
-			console.error('Error initializing services:', error)
+			console.error('Error:', error)
 			setLoading(false)
 		}
 	}
 
 	const fetchServices = async () => {
 		try {
-			const querySnapshot = await getDocs(collection(db, 'services'))
-			const servicesData = querySnapshot.docs.map(doc => ({
-				id: doc.id,
-				...doc.data(),
-			}))
-			console.log('Fetched services:', servicesData.length)
-			setServices(servicesData)
+			const snapshot = await getDocs(collection(db, 'services'))
+			setServices(snapshot.docs.map(d => ({ id: d.id, ...d.data() })))
 		} catch (error) {
-			console.error('Error fetching services:', error)
+			console.error('Error:', error)
 		} finally {
 			setLoading(false)
 		}
 	}
 
-	const addService = async serviceData => {
-		try {
-			await addDoc(collection(db, 'services'), {
-				...serviceData,
-				createdAt: new Date().toISOString(),
-			})
-			await fetchServices()
-		} catch (error) {
-			console.error('Error adding service:', error)
-			throw error
-		}
+	const addService = async data => {
+		await addDoc(collection(db, 'services'), {
+			...data,
+			createdAt: new Date().toISOString(),
+		})
+		await fetchServices()
 	}
 
-	const updateService = async (id, serviceData) => {
-		try {
-			const serviceRef = doc(db, 'services', id)
-			await updateDoc(serviceRef, {
-				...serviceData,
-				updatedAt: new Date().toISOString(),
-			})
-			await fetchServices()
-		} catch (error) {
-			console.error('Error updating service:', error)
-			throw error
-		}
+	const updateService = async (id, data) => {
+		await updateDoc(doc(db, 'services', id), {
+			...data,
+			updatedAt: new Date().toISOString(),
+		})
+		await fetchServices()
 	}
 
 	const deleteService = async id => {
-		try {
-			await deleteDoc(doc(db, 'services', id))
-			await fetchServices()
-		} catch (error) {
-			console.error('Error deleting service:', error)
-			throw error
-		}
+		await deleteDoc(doc(db, 'services', id))
+		await fetchServices()
 	}
-
-	const getServicesByCategory = category =>
-		services.filter(s => s.category === category)
-	const getServicesByType = (category, type) =>
-		services.filter(s => s.category === category && s.type === type)
 
 	return (
 		<ServicesContext.Provider
@@ -653,8 +633,6 @@ export const ServicesProvider = ({ children }) => {
 				updateService,
 				deleteService,
 				fetchServices,
-				getServicesByCategory,
-				getServicesByType,
 			}}
 		>
 			{children}

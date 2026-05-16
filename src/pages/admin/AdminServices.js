@@ -1,3 +1,4 @@
+// pages/admin/AdminServices.js
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Plus, Edit2, Trash2, Check, X } from 'lucide-react'
@@ -298,20 +299,21 @@ const AdminServices = () => {
 	const [form, setForm] = useState({
 		name: '',
 		category: 'cleaning',
-		type: 'regular',
+		serviceType: 'base',
+		subtype: 'regular',
 		price: '',
 		unit: '',
 		description: '',
 		features: [''],
 	})
 
-	const cleaningTypes = [
+	const cleaningSubtypes = [
 		{ value: 'regular', label: 'Регулярная' },
 		{ value: 'general', label: 'Генеральная' },
 		{ value: 'afterRepair', label: 'После ремонта' },
 	]
 
-	const drycleaningTypes = [
+	const drycleaningSubtypes = [
 		{ value: 'clothing', label: 'Одежда' },
 		{ value: 'curtains', label: 'Шторы и текстиль' },
 		{ value: 'furniture', label: 'Мебель' },
@@ -320,14 +322,27 @@ const AdminServices = () => {
 		{ value: 'laundry', label: 'Стирка и глажка' },
 	]
 
-	const typeOptions =
-		form.category === 'cleaning' ? cleaningTypes : drycleaningTypes
+	const subtypeOptions =
+		form.category === 'cleaning' ? cleaningSubtypes : drycleaningSubtypes
+
+	const typeLabels = {
+		regular: 'Регулярная',
+		general: 'Генеральная',
+		afterRepair: 'После ремонта',
+		clothing: 'Одежда',
+		curtains: 'Шторы и текстиль',
+		furniture: 'Мебель',
+		carpets: 'Ковры',
+		shoes: 'Обувь',
+		laundry: 'Стирка и глажка',
+	}
 
 	const resetForm = () => {
 		setForm({
 			name: '',
 			category: 'cleaning',
-			type: 'regular',
+			serviceType: 'base',
+			subtype: 'regular',
 			price: '',
 			unit: '',
 			description: '',
@@ -357,7 +372,8 @@ const AdminServices = () => {
 		setForm({
 			...form,
 			category: newCategory,
-			type: newCategory === 'cleaning' ? 'regular' : 'clothing',
+			subtype: newCategory === 'cleaning' ? 'regular' : 'clothing',
+			serviceType: newCategory === 'drycleaning' ? 'base' : form.serviceType,
 		})
 	}
 
@@ -367,7 +383,8 @@ const AdminServices = () => {
 		const data = {
 			name: form.name,
 			category: form.category,
-			type: form.type,
+			type: form.category === 'drycleaning' ? form.subtype : form.serviceType,
+			subtype: form.subtype,
 			price: Number(form.price),
 			unit: form.unit,
 			description: form.description,
@@ -391,7 +408,13 @@ const AdminServices = () => {
 		setForm({
 			name: service.name || '',
 			category: service.category || 'cleaning',
-			type: service.type || 'regular',
+			serviceType:
+				service.type === 'base'
+					? 'base'
+					: service.type === 'extra'
+						? 'extra'
+						: 'base',
+			subtype: service.subtype || service.type || 'regular',
 			price: service.price?.toString() || '',
 			unit: service.unit || '',
 			description: service.description || '',
@@ -407,26 +430,19 @@ const AdminServices = () => {
 		}
 	}
 
-	const cleaningServices = services.filter(s => s.category === 'cleaning')
+	const cleaningBaseServices = services.filter(
+		s => s.category === 'cleaning' && s.type === 'base',
+	)
+	const cleaningExtraServices = services.filter(
+		s => s.category === 'cleaning' && s.type === 'extra',
+	)
 	const dryCleaningServices = services.filter(s => s.category === 'drycleaning')
-
-	const typeLabels = {
-		regular: 'Регулярная',
-		general: 'Генеральная',
-		afterRepair: 'После ремонта',
-		clothing: 'Одежда',
-		curtains: 'Шторы и текстиль',
-		furniture: 'Мебель',
-		carpets: 'Ковры',
-		shoes: 'Обувь',
-		laundry: 'Стирка и глажка',
-	}
 
 	const renderServiceCard = service => (
 		<ServiceCard key={service.id}>
 			<ServiceName>{service.name}</ServiceName>
 			<ServiceMeta>
-				{service.unit} | {typeLabels[service.type] || service.type}
+				{service.unit} | {typeLabels[service.subtype] || service.subtype}
 			</ServiceMeta>
 			<ServicePrice>{service.price?.toLocaleString()} P</ServicePrice>
 			{service.description && (
@@ -523,17 +539,32 @@ const AdminServices = () => {
 								</FormSelect>
 							</FormGroup>
 
+							{form.category === 'cleaning' && (
+								<FormGroup>
+									<FormLabel>Тип услуги</FormLabel>
+									<FormSelect
+										value={form.serviceType}
+										onChange={e =>
+											setForm({ ...form, serviceType: e.target.value })
+										}
+									>
+										<option value='base'>Базовая (основной тип уборки)</option>
+										<option value='extra'>Дополнительная (доп опция)</option>
+									</FormSelect>
+								</FormGroup>
+							)}
+
 							<FormGroup>
 								<FormLabel>
 									{form.category === 'cleaning'
-										? 'Тип уборки'
-										: 'Тип химчистки'}
+										? 'Подтип уборки'
+										: 'Категория химчистки'}
 								</FormLabel>
 								<FormSelect
-									value={form.type}
-									onChange={e => setForm({ ...form, type: e.target.value })}
+									value={form.subtype}
+									onChange={e => setForm({ ...form, subtype: e.target.value })}
 								>
-									{typeOptions.map(opt => (
+									{subtypeOptions.map(opt => (
 										<option key={opt.value} value={opt.value}>
 											{opt.label}
 										</option>
@@ -598,13 +629,16 @@ const AdminServices = () => {
 				</FormCard>
 			)}
 
+			{/* Уборка — Базовые типы */}
 			<CategorySection>
-				<CategoryTitle>Уборка</CategoryTitle>
-				{['regular', 'general', 'afterRepair'].map(type => {
-					const typeServices = cleaningServices.filter(s => s.type === type)
+				<CategoryTitle>Уборка — Базовые типы</CategoryTitle>
+				{cleaningSubtypes.map(st => {
+					const typeServices = cleaningBaseServices.filter(
+						s => s.subtype === st.value,
+					)
 					return (
-						<TypeGroup key={type}>
-							<TypeLabel>{typeLabels[type]}</TypeLabel>
+						<TypeGroup key={st.value}>
+							<TypeLabel>{st.label}</TypeLabel>
 							{typeServices.length > 0 ? (
 								<ServicesGrid>
 									{typeServices.map(renderServiceCard)}
@@ -617,20 +651,38 @@ const AdminServices = () => {
 				})}
 			</CategorySection>
 
+			{/* Уборка — Дополнительные услуги */}
+			<CategorySection>
+				<CategoryTitle>Уборка — Дополнительные услуги</CategoryTitle>
+				{cleaningSubtypes.map(st => {
+					const typeServices = cleaningExtraServices.filter(
+						s => s.subtype === st.value,
+					)
+					return (
+						<TypeGroup key={st.value}>
+							<TypeLabel>{st.label} — допы</TypeLabel>
+							{typeServices.length > 0 ? (
+								<ServicesGrid>
+									{typeServices.map(renderServiceCard)}
+								</ServicesGrid>
+							) : (
+								<EmptyState>Нет услуг</EmptyState>
+							)}
+						</TypeGroup>
+					)
+				})}
+			</CategorySection>
+
+			{/* Химчистка */}
 			<CategorySection>
 				<CategoryTitle>Химчистка</CategoryTitle>
-				{[
-					'clothing',
-					'curtains',
-					'furniture',
-					'carpets',
-					'shoes',
-					'laundry',
-				].map(type => {
-					const typeServices = dryCleaningServices.filter(s => s.type === type)
+				{drycleaningSubtypes.map(st => {
+					const typeServices = dryCleaningServices.filter(
+						s => s.type === st.value || s.subtype === st.value,
+					)
 					return (
-						<TypeGroup key={type}>
-							<TypeLabel>{typeLabels[type]}</TypeLabel>
+						<TypeGroup key={st.value}>
+							<TypeLabel>{st.label}</TypeLabel>
 							{typeServices.length > 0 ? (
 								<ServicesGrid>
 									{typeServices.map(renderServiceCard)}

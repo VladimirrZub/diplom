@@ -1,1 +1,1 @@
-npm install react-router-dom styled-components lucide-react
+npm install react-router-dom styled-components lucide-react framer-motion firebase 
