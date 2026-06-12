@@ -219,32 +219,47 @@ const Checkout = () => {
 	})
 	const [suggestions, setSuggestions] = useState([])
 	const [showSuggestions, setShowSuggestions] = useState(false)
+	const debounceTimer = useRef(null)
 
 	useEffect(() => {
 		window.scrollTo({ top: 0, behavior: 'smooth' })
 	}, [])
 
-	const fetchSuggestions = async query => {
-		if (query.length < 3) {
+	const fetchSuggestions = query => {
+		if (debounceTimer.current) {
+			clearTimeout(debounceTimer.current)
+		}
+
+		if (query.length < 4) {
 			setSuggestions([])
 			setShowSuggestions(false)
 			return
 		}
 
-		try {
-			const apiKey = 'eede92ce-bc10-4094-b0b2-15ae8f034ab6'
-			const response = await fetch(
-				`https://geocode-maps.yandex.ru/1.x/?apikey=${apiKey}&format=json&geocode=${encodeURIComponent(query)}&results=5`,
-			)
-			const data = await response.json()
-			const results = data.response.GeoObjectCollection.featureMember.map(
-				item => item.GeoObject.metaDataProperty.GeocoderMetaData.text,
-			)
-			setSuggestions(results)
-			setShowSuggestions(results.length > 0)
-		} catch (err) {
-			console.error('Ошибка подсказок:', err)
-		}
+		debounceTimer.current = setTimeout(async () => {
+			try {
+				const response = await fetch(
+					`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=ru&accept-language=ru`,
+					{
+						headers: {
+							'User-Agent': 'ClearBreathApp/1.0 (clearbreath.ru)',
+						},
+					},
+				)
+
+				if (response.status === 429) {
+					console.warn('Слишком много запросов, ждём...')
+					return
+				}
+
+				const data = await response.json()
+				const results = data.map(item => item.display_name)
+				setSuggestions(results)
+				setShowSuggestions(results.length > 0)
+			} catch (err) {
+				console.error('Ошибка:', err)
+			}
+		}, 1500) // Увеличил до 1.5 секунд
 	}
 
 	const handleAddressChange = e => {
@@ -267,7 +282,6 @@ const Checkout = () => {
 
 	const handleSubmit = async e => {
 		e.preventDefault()
-
 		if (!form.name.trim()) {
 			alert('Введите ФИО')
 			return
@@ -298,7 +312,6 @@ const Checkout = () => {
 				status: 'new',
 				createdAt: new Date().toISOString(),
 			}
-
 			await addDoc(collection(db, 'orders'), orderData)
 			clearCart()
 			setSubmitted(true)
@@ -335,7 +348,6 @@ const Checkout = () => {
 				<Label>Checkout</Label>
 				<Title>Оформление заказа</Title>
 			</Header>
-
 			<GlassCard padding='2rem'>
 				<Form onSubmit={handleSubmit}>
 					<FormGroup>
@@ -347,7 +359,6 @@ const Checkout = () => {
 							required
 						/>
 					</FormGroup>
-
 					<FormGroup>
 						<FormLabel>Телефон *</FormLabel>
 						<FormInput
@@ -359,7 +370,6 @@ const Checkout = () => {
 							required
 						/>
 					</FormGroup>
-
 					<FormGroup>
 						<FormLabel>Адрес *</FormLabel>
 						<FormInput
@@ -379,16 +389,14 @@ const Checkout = () => {
 							</SuggestionsList>
 						)}
 					</FormGroup>
-
 					<FormGroup>
-						<FormLabel>Комментарий к заказу</FormLabel>
+						<FormLabel>Комментарий</FormLabel>
 						<FormTextarea
 							value={form.comment}
 							onChange={e => setForm({ ...form, comment: e.target.value })}
 							placeholder='Особые пожелания, код домофона...'
 						/>
 					</FormGroup>
-
 					<SectionLabel>Способ оплаты</SectionLabel>
 					<RadioGroup>
 						<RadioLabel checked={form.payment === 'card'}>
@@ -410,7 +418,6 @@ const Checkout = () => {
 							Наличными
 						</RadioLabel>
 					</RadioGroup>
-
 					<CheckboxLabel>
 						<RadioInput
 							type='checkbox'
@@ -419,7 +426,6 @@ const Checkout = () => {
 						/>
 						Я буду дома во время уборки
 					</CheckboxLabel>
-
 					<Button
 						type='submit'
 						size='large'
