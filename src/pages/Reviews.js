@@ -1,16 +1,14 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components'
-import { Star, Send } from 'lucide-react'
-import GlassCard from '../components/UI/GlassCard'
+import { Star, ArrowDown } from 'lucide-react'
 import Button from '../components/UI/Button'
-import Input from '../components/UI/Input'
-import { useAuth } from '../context/AuthContext'
+import { db } from '../firebase/config'
+import { collection, getDocs } from 'firebase/firestore'
 
 const Container = styled.div`
 	max-width: 1200px;
 	margin: 0 auto;
 	padding: 2rem 3rem;
-
 	@media (max-width: 768px) {
 		padding: 1.5rem;
 	}
@@ -18,7 +16,7 @@ const Container = styled.div`
 
 const Header = styled.div`
 	text-align: center;
-	margin-bottom: 5rem;
+	margin-bottom: 4rem;
 	padding-top: 3rem;
 `
 
@@ -28,6 +26,7 @@ const Label = styled.div`
 	letter-spacing: 0.25em;
 	text-transform: uppercase;
 	color: ${props => props.theme.colors.accent};
+	margin-bottom: 1.5rem;
 	margin-top: 2.5rem;
 `
 
@@ -35,9 +34,34 @@ const Title = styled.h1`
 	font-family: ${props => props.theme.fonts.primary};
 	font-size: 3.5rem;
 	font-weight: 700;
-
+	color: ${props => props.theme.colors.text};
 	@media (max-width: 480px) {
 		font-size: 2.2rem;
+	}
+`
+
+const Controls = styled.div`
+	display: flex;
+	justify-content: flex-end;
+	margin-bottom: 2rem;
+`
+
+const Select = styled.select`
+	padding: 0.7rem 2rem 0.7rem 0;
+	background: transparent;
+	border: none;
+	border-bottom: 1px solid ${props => props.theme.colors.border};
+	color: ${props => props.theme.colors.text};
+	font-size: 0.9rem;
+	outline: none;
+	cursor: pointer;
+	font-family: ${props => props.theme.fonts.secondary};
+	&:focus {
+		border-color: ${props => props.theme.colors.borderAccent};
+	}
+	option {
+		background: ${props => props.theme.colors.surface};
+		color: ${props => props.theme.colors.text};
 	}
 `
 
@@ -45,17 +69,25 @@ const Grid = styled.div`
 	display: grid;
 	grid-template-columns: repeat(2, 1fr);
 	gap: 1px;
-	background: ${props => props.theme.colors.border};
-	margin-bottom: 4rem;
-
+	background: transparent;
+	margin-bottom: 2rem;
 	@media (max-width: 768px) {
 		grid-template-columns: 1fr;
 	}
 `
 
 const ReviewCard = styled.div`
-	background: ${props => props.theme.colors.surface};
+	background: ${props => props.theme.colors.darker};
 	padding: 3rem;
+	transition: background 0.3s;
+	border: 1px solid ${props => props.theme.colors.border};
+	&:hover {
+		background: ${props => props.theme.colors.surface};
+		border-color: ${props => props.theme.colors.borderAccent};
+	}
+	@media (max-width: 480px) {
+		padding: 2rem 1.5rem;
+	}
 `
 
 const Stars = styled.div`
@@ -67,6 +99,7 @@ const Stars = styled.div`
 const ReviewName = styled.h4`
 	font-family: ${props => props.theme.fonts.primary};
 	font-size: 1.3rem;
+	color: ${props => props.theme.colors.text};
 	margin-bottom: 0.3rem;
 `
 
@@ -82,64 +115,112 @@ const ReviewText = styled.p`
 	font-weight: 300;
 `
 
-const FormBlock = styled(GlassCard)`
-	max-width: 600px;
-	margin: 0 auto;
-	padding: 3rem;
+const LoadMoreBtn = styled.div`
+	text-align: center;
+	margin-bottom: 4rem;
 `
 
-const StarPicker = styled.div`
-	display: flex;
-	gap: 0.5rem;
-	margin-bottom: 2rem;
-
-	svg {
-		cursor: pointer;
-		transition: transform 0.2s;
-		&:hover {
-			transform: scale(1.2);
-		}
-	}
+const LoadingText = styled.div`
+	text-align: center;
+	padding: 2rem;
+	color: ${props => props.theme.colors.textMuted};
+	font-family: ${props => props.theme.fonts.primary};
+	font-size: 1rem;
 `
+
+const EmptyText = styled.div`
+	text-align: center;
+	padding: 4rem;
+	color: ${props => props.theme.colors.textMuted};
+	font-family: ${props => props.theme.fonts.primary};
+	font-size: 1.2rem;
+`
+
+const REVIEWS_PER_PAGE = 6
 
 const Reviews = () => {
-	const { user, isAuthenticated } = useAuth()
-	const [reviews] = useState([
-		{
-			id: 1,
-			name: 'Анна Петрова',
-			date: '15.03.2025',
-			rating: 5,
-			text: 'Безупречное качество. Заказала генеральную уборку после ремонта — квартира выглядит лучше, чем до ремонта.',
-		},
-		{
-			id: 2,
-			name: 'Михаил Иванов',
-			date: '10.03.2025',
-			rating: 5,
-			text: 'Регулярно заказываю уборку офиса. Всегда вовремя и на высшем уровне. Гибкий график.',
-		},
-		{
-			id: 3,
-			name: 'Елена Смирнова',
-			date: '05.03.2025',
-			rating: 4,
-			text: 'Хорошая работа, приятные цены. Химчистка дивана прошла отлично.',
-		},
-		{
-			id: 4,
-			name: 'Дмитрий Козлов',
-			date: '01.03.2025',
-			rating: 5,
-			text: 'Пользуюсь услугами полгода. Качество на высоте. Рекомендую!',
-		},
-	])
-	const [newRev, setNewRev] = useState({ rating: 5, text: '' })
+	const [allReviews, setAllReviews] = useState([])
+	const [visibleReviews, setVisibleReviews] = useState([])
+	const [sortBy, setSortBy] = useState('newest')
+	const [page, setPage] = useState(1)
+	const [hasMore, setHasMore] = useState(true)
+	const [loading, setLoading] = useState(true)
+	const [loadingMore, setLoadingMore] = useState(false)
 
-	const submit = () => {
-		if (!newRev.text.trim() || !isAuthenticated) return
-		alert('Отзыв отправлен')
-		setNewRev({ rating: 5, text: '' })
+	useEffect(() => {
+		loadAllReviews()
+	}, [])
+
+	useEffect(() => {
+		sortAndPaginate()
+	}, [sortBy, allReviews])
+
+	const loadAllReviews = async () => {
+		try {
+			const snapshot = await getDocs(collection(db, 'reviews'))
+			const reviews = snapshot.docs
+				.map(d => ({ id: d.id, ...d.data() }))
+				.filter(r => r.status === 'approved')
+			setAllReviews(reviews)
+			setLoading(false)
+		} catch (err) {
+			console.error('Error:', err)
+			setLoading(false)
+		}
+	}
+
+	const sortAndPaginate = () => {
+		let sorted = [...allReviews]
+
+		if (sortBy === 'newest') {
+			sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+		} else if (sortBy === 'oldest') {
+			sorted.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+		} else if (sortBy === 'rating_desc') {
+			sorted.sort((a, b) => b.rating - a.rating)
+		} else if (sortBy === 'rating_asc') {
+			sorted.sort((a, b) => a.rating - b.rating)
+		}
+
+		const paginated = sorted.slice(0, REVIEWS_PER_PAGE)
+		setVisibleReviews(paginated)
+		setPage(1)
+		setHasMore(sorted.length > REVIEWS_PER_PAGE)
+	}
+
+	const handleLoadMore = () => {
+		setLoadingMore(true)
+
+		let sorted = [...allReviews]
+		if (sortBy === 'newest') {
+			sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+		} else if (sortBy === 'oldest') {
+			sorted.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+		} else if (sortBy === 'rating_desc') {
+			sorted.sort((a, b) => b.rating - a.rating)
+		} else if (sortBy === 'rating_asc') {
+			sorted.sort((a, b) => a.rating - b.rating)
+		}
+
+		const nextPage = page + 1
+		const paginated = sorted.slice(0, nextPage * REVIEWS_PER_PAGE)
+
+		setVisibleReviews(paginated)
+		setPage(nextPage)
+		setHasMore(paginated.length < sorted.length)
+		setLoadingMore(false)
+	}
+
+	if (loading) {
+		return (
+			<Container>
+				<Header>
+					<Label>Reviews</Label>
+					<Title>Отзывы клиентов</Title>
+				</Header>
+				<LoadingText>Загрузка отзывов...</LoadingText>
+			</Container>
+		)
 	}
 
 	return (
@@ -149,68 +230,59 @@ const Reviews = () => {
 				<Title>Отзывы клиентов</Title>
 			</Header>
 
-			<Grid>
-				{reviews.map(r => (
-					<ReviewCard key={r.id}>
-						<Stars>
-							{[...Array(5)].map((_, i) => (
-								<Star
-									key={i}
-									size={14}
-									fill={i < r.rating ? '#D4AF37' : 'none'}
-									color={i < r.rating ? '#D4AF37' : '#5C5850'}
-								/>
-							))}
-						</Stars>
-						<ReviewName>{r.name}</ReviewName>
-						<ReviewDate>{r.date}</ReviewDate>
-						<ReviewText>{r.text}</ReviewText>
-					</ReviewCard>
-				))}
-			</Grid>
+			{allReviews.length > 0 && (
+				<Controls>
+					<Select value={sortBy} onChange={e => setSortBy(e.target.value)}>
+						<option value='newest'>Сначала новые</option>
+						<option value='oldest'>Сначала старые</option>
+						<option value='rating_desc'>По рейтингу (высокий)</option>
+						<option value='rating_asc'>По рейтингу (низкий)</option>
+					</Select>
+				</Controls>
+			)}
 
-			<FormBlock>
-				<h3
-					style={{
-						fontFamily: '"Cormorant Garamond", serif',
-						fontSize: '1.8rem',
-						marginBottom: '2rem',
-					}}
-				>
-					Оставить отзыв
-				</h3>
-				{isAuthenticated ? (
-					<>
-						<StarPicker>
-							{[1, 2, 3, 4, 5].map(s => (
-								<Star
-									key={s}
-									size={28}
-									fill={s <= newRev.rating ? '#D4AF37' : 'none'}
-									color={s <= newRev.rating ? '#D4AF37' : '#5C5850'}
-									onClick={() => setNewRev({ ...newRev, rating: s })}
-								/>
-							))}
-						</StarPicker>
-						<Input
-							label='Ваш отзыв'
-							textarea
-							value={newRev.text}
-							onChange={e => setNewRev({ ...newRev, text: e.target.value })}
-						/>
-						<Button
-							onClick={submit}
-							style={{ width: '100%', justifyContent: 'center' }}
-						>
-							<Send size={18} /> Отправить
-						</Button>
-					</>
-				) : (
-					<p style={{ color: '#8B8478', textAlign: 'center' }}>
-						Войдите в кабинет, чтобы оставить отзыв
-					</p>
-				)}
-			</FormBlock>
+			{visibleReviews.length > 0 ? (
+				<>
+					<Grid>
+						{visibleReviews.map(r => (
+							<ReviewCard key={r.id}>
+								<Stars>
+									{[...Array(5)].map((_, i) => (
+										<Star
+											key={i}
+											size={14}
+											fill={i < r.rating ? '#D4AF37' : 'none'}
+											color={i < r.rating ? '#D4AF37' : '#5C5850'}
+										/>
+									))}
+								</Stars>
+								<ReviewName>{r.userName}</ReviewName>
+								<ReviewDate>
+									{new Date(r.createdAt).toLocaleDateString()}
+								</ReviewDate>
+								<ReviewText>{r.text}</ReviewText>
+							</ReviewCard>
+						))}
+					</Grid>
+
+					{hasMore && (
+						<LoadMoreBtn>
+							<Button
+								variant='outline'
+								onClick={handleLoadMore}
+								disabled={loadingMore}
+							>
+								<ArrowDown size={18} />{' '}
+								{loadingMore ? 'Загрузка...' : 'Загрузить ещё'}
+							</Button>
+						</LoadMoreBtn>
+					)}
+
+					{!hasMore && <LoadingText>Все отзывы загружены</LoadingText>}
+				</>
+			) : (
+				<EmptyText>Пока нет отзывов</EmptyText>
+			)}
 		</Container>
 	)
 }

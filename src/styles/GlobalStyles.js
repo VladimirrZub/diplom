@@ -1,4 +1,4 @@
-import { createGlobalStyle } from 'styled-components';
+import { createGlobalStyle } from 'styled-components'
 
 const GlobalStyles = createGlobalStyle`
   @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
@@ -30,7 +30,7 @@ const GlobalStyles = createGlobalStyle`
 
   ::selection {
     background: rgba(212, 175, 55, 0.3);
-    color: #fff;
+    color: ${props => props.theme.colors.text};
   }
 
   a {
@@ -61,26 +61,6 @@ const GlobalStyles = createGlobalStyle`
   ::-webkit-scrollbar-thumb {
     background: ${props => props.theme.colors.accent};
   }
+`
 
-  .ornament-divider {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    color: ${props => props.theme.colors.accent};
-    
-    .line {
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(to right, transparent, ${props => props.theme.colors.accent}, transparent);
-    }
-    
-    .diamond {
-      width: 8px;
-      height: 8px;
-      transform: rotate(45deg);
-      border: 1px solid ${props => props.theme.colors.accent};
-    }
-  }
-`;
-
-export default GlobalStyles;
+export default GlobalStyles

@@ -47,17 +47,13 @@ const Title = styled.h1`
 	font-family: ${props => props.theme.fonts.primary};
 	font-size: 2.5rem;
 	font-weight: 700;
-
-	@media (min-width: 768px) {
-		font-size: 3.5rem;
-	}
+	color: ${props => props.theme.colors.text};
 `
 
 const Layout = styled.div`
 	display: grid;
 	grid-template-columns: 240px 1fr;
 	gap: 2rem;
-
 	@media (max-width: 768px) {
 		grid-template-columns: 1fr;
 	}
@@ -86,7 +82,6 @@ const SideBtn = styled.button`
 	gap: 0.8rem;
 	transition: all 0.3s;
 	cursor: pointer;
-
 	&:hover {
 		color: ${props => props.theme.colors.text};
 		border-color: ${props => props.theme.colors.border};
@@ -107,6 +102,7 @@ const Section = styled(GlassCard)`
 const SectionTitle = styled.h3`
 	font-family: ${props => props.theme.fonts.primary};
 	font-size: 1.5rem;
+	color: ${props => props.theme.colors.text};
 	margin-bottom: 1.5rem;
 	padding-bottom: 1rem;
 	border-bottom: 1px solid ${props => props.theme.colors.border};
@@ -126,7 +122,7 @@ const FormGrid = styled.div`
 
 const OrderItem = styled.div`
 	border-bottom: 1px solid ${props => props.theme.colors.border};
-	padding: 1.2rem 0;
+	padding: 1.5rem 0;
 	&:last-child {
 		border: none;
 	}
@@ -144,6 +140,7 @@ const OrderTop = styled.div`
 const OrderTitle = styled.h4`
 	font-family: ${props => props.theme.fonts.primary};
 	font-size: 1.1rem;
+	color: ${props => props.theme.colors.text};
 `
 
 const OrderDate = styled.span`
@@ -154,14 +151,26 @@ const OrderDate = styled.span`
 const OrderPrice = styled.div`
 	color: ${props => props.theme.colors.accent};
 	font-family: ${props => props.theme.fonts.primary};
-	font-size: 1.1rem;
+	font-size: 1.2rem;
 	margin-top: 0.3rem;
+	font-weight: 600;
 `
 
-const OrderItems = styled.div`
-	color: ${props => props.theme.colors.textMuted};
+const OrderDetails = styled.div`
+	color: ${props => props.theme.colors.textDimmed};
 	font-size: 0.85rem;
 	margin-top: 0.5rem;
+	line-height: 1.6;
+`
+
+const OrderComment = styled.div`
+	background: ${props => props.theme.colors.elevated};
+	padding: 0.8rem;
+	margin-top: 0.5rem;
+	border-left: 2px solid ${props => props.theme.colors.accent};
+	color: ${props => props.theme.colors.textDimmed};
+	font-size: 0.85rem;
+	font-style: italic;
 `
 
 const StatusBadge = styled.span`
@@ -200,19 +209,16 @@ const ReviewBtn = styled(Button)`
 `
 
 const Profile = () => {
+	const { user, isAuthenticated, isAdmin, logout, updateUser } = useAuth()
 	const navigate = useNavigate()
 	const [tab, setTab] = useState('profile')
 	const [edit, setEdit] = useState(false)
 	const [orders, setOrders] = useState([])
 	const [userReviews, setUserReviews] = useState([])
-	const { user, isAuthenticated, isAdmin, logout, updateUser } = useAuth()
 
 	useEffect(() => {
-		if (!isAuthenticated) {
-			navigate('/login')
-		} else if (isAdmin) {
-			navigate('/admin')
-		}
+		if (!isAuthenticated) navigate('/login')
+		else if (isAdmin) navigate('/admin')
 	}, [isAuthenticated, isAdmin, navigate])
 
 	useEffect(() => {
@@ -236,7 +242,7 @@ const Profile = () => {
 				),
 			)
 		} catch (err) {
-			console.error('Error fetching orders:', err)
+			console.error('Error:', err)
 		}
 	}
 
@@ -249,7 +255,7 @@ const Profile = () => {
 			const snapshot = await getDocs(q)
 			setUserReviews(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })))
 		} catch (err) {
-			console.error('Error fetching reviews:', err)
+			console.error('Error:', err)
 		}
 	}
 
@@ -348,13 +354,24 @@ const Profile = () => {
 										<OrderPrice>
 											{order.totalPrice?.toLocaleString()} P
 										</OrderPrice>
-										<OrderItems>
+										<OrderDetails>
+											<strong>Адрес:</strong> {order.customer?.address}
+											<br />
+											<strong>Оплата:</strong>{' '}
+											{order.payment === 'card' ? 'Карта' : 'Наличные'}
+											<br />
+											<strong>Дома:</strong> {order.atHome ? 'Да' : 'Нет'}
+										</OrderDetails>
+										{order.comment && (
+											<OrderComment>{order.comment}</OrderComment>
+										)}
+										<OrderDetails style={{ marginTop: '0.5rem' }}>
 											{order.items?.map((item, i) => (
 												<div key={i}>
-													{item.title} x{item.quantity || 1}
+													{item.title} — {item.price?.toLocaleString()} P
 												</div>
 											))}
-										</OrderItems>
+										</OrderDetails>
 										<div
 											style={{
 												display: 'flex',

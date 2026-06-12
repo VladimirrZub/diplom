@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import { Trash2, ArrowRight } from 'lucide-react'
@@ -111,6 +111,10 @@ const Empty = styled.div`
 
 const Cart = () => {
 	const { items, removeFromCart, clearCart, totalPrice } = useCart()
+
+	useEffect(() => {
+		window.scrollTo({ top: 0, behavior: 'smooth' })
+	}, [])
 
 	if (items.length === 0) {
 		return (

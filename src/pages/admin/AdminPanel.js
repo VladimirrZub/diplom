@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useNavigate, Outlet, Link, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
-import { LogOut, Package, Star, ShoppingBag } from 'lucide-react'
+import { LogOut, Package, Star, ShoppingBag, MessageSquare } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/UI/Button'
 
@@ -131,6 +131,16 @@ const AdminPanel = () => {
 						style={{ marginRight: '0.5rem', verticalAlign: 'middle' }}
 					/>
 					Отзывы
+				</NavLink>
+				<NavLink
+					to='/admin/support'
+					active={location.pathname.includes('/admin/support')}
+				>
+					<MessageSquare
+						size={16}
+						style={{ marginRight: '0.5rem', verticalAlign: 'middle' }}
+					/>
+					Поддержка
 				</NavLink>
 			</Nav>
 			<Outlet />

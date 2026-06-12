@@ -9,16 +9,14 @@ const HeaderWrapper = styled.header`
 	left: 0;
 	right: 0;
 	z-index: 100;
-	padding: 1.4rem 0;
+	padding: 0.9rem 0;
 	transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 	background: ${props =>
-		props.scrolled || props.open ? 'rgba(5, 7, 10, 0.97)' : 'transparent'};
-	backdrop-filter: ${props =>
-		props.scrolled || props.open ? 'blur(40px)' : 'none'};
-	-webkit-backdrop-filter: ${props =>
-		props.scrolled || props.open ? 'blur(40px)' : 'none'};
+		props.scrolled ? props.theme.colors.surface : 'transparent'};
+	backdrop-filter: ${props => (props.scrolled ? 'blur(6px)' : 'none')};
+	-webkit-backdrop-filter: ${props => (props.scrolled ? 'blur(6px)' : 'none')};
 	border-bottom: ${props =>
-		props.scrolled || props.open
+		props.scrolled
 			? `1px solid ${props.theme.colors.border}`
 			: '1px solid transparent'};
 `
@@ -44,7 +42,6 @@ const Logo = styled(Link)`
 	color: ${props => props.theme.colors.accent};
 	transition: color 0.5s ease;
 	user-select: none;
-	z-index: 102;
 
 	span {
 		color: ${props => props.theme.colors.text};
@@ -55,7 +52,6 @@ const Logo = styled(Link)`
 
 	&:hover {
 		color: ${props => props.theme.colors.text};
-
 		span {
 			color: ${props => props.theme.colors.accent};
 		}
@@ -66,7 +62,7 @@ const Logo = styled(Link)`
 	}
 
 	@media (min-width: 769px) {
-		font-size: 2rem;
+		font-size: 1.8rem;
 	}
 `
 

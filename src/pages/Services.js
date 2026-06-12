@@ -282,6 +282,7 @@ const ExtraItem = styled.label`
 	background: ${p => (p.checked ? 'rgba(212,175,55,0.05)' : 'transparent')};
 	cursor: pointer;
 	transition: all 0.3s;
+	gap: 0.8rem;
 	&:hover {
 		border-color: ${p => p.theme.colors.borderAccent};
 	}
@@ -290,22 +291,25 @@ const ExtraItem = styled.label`
 	}
 `
 
-const ExtraInfo = styled.div`
+const ExtraLeft = styled.div`
 	flex: 1;
+	min-width: 0;
 `
 
 const ExtraName = styled.span`
+	display: block;
 	color: ${p => p.theme.colors.text};
 	font-size: 0.85rem;
+	margin-bottom: 0.15rem;
 	@media (min-width: 768px) {
 		font-size: 0.95rem;
 	}
 `
 
 const ExtraDesc = styled.span`
+	display: block;
 	color: ${p => p.theme.colors.textMuted};
 	font-size: 0.75rem;
-	margin-top: 0.2rem;
 	@media (min-width: 768px) {
 		font-size: 0.8rem;
 	}
@@ -316,11 +320,10 @@ const ExtraPrice = styled.span`
 	font-family: ${p => p.theme.fonts.primary};
 	font-size: 0.95rem;
 	font-weight: 600;
-	margin-right: 0.8rem;
 	white-space: nowrap;
+	flex-shrink: 0;
 	@media (min-width: 768px) {
 		font-size: 1.1rem;
-		margin-right: 1rem;
 	}
 `
 
@@ -643,24 +646,36 @@ const Services = () => {
 	const [dcCategory, setDcCategory] = useState('clothing')
 	const [dcQuantities, setDcQuantities] = useState({})
 
-	// Базовые услуги уборки из Firebase
+	// Сначала находим текущую базовую услугу
+	const currentBaseService = services.find(
+		s =>
+			s.category === 'cleaning' &&
+			s.type === 'base' &&
+			s.subtype === cleaningSubTab,
+	)
+
 	const baseServices = services.filter(
 		s => s.category === 'cleaning' && s.type === 'base',
 	)
-	const currentBase = baseServices.find(s => s.subtype === cleaningSubTab) || {
-		name: subtypeLabels[cleaningSubTab],
-		price: 3500,
-		unit: '1-комнатная квартира',
-		features: [],
-	}
 
-	// Дополнительные услуги для выбранного типа уборки
-	const extraServices = services.filter(
-		s =>
-			s.category === 'cleaning' &&
-			s.type === 'extra' &&
-			s.subtype === cleaningSubTab,
-	)
+	const currentBase = currentBaseService ||
+		baseServices.find(s => s.subtype === cleaningSubTab) || {
+			name: subtypeLabels[cleaningSubTab],
+			price: 3500,
+			unit: '1-комнатная квартира',
+			features: [],
+		}
+
+	// Допы — только привязанные к текущей основной услуге
+	const extraServices =
+		currentBaseService?.extras?.length > 0
+			? services.filter(
+					s =>
+						s.category === 'cleaning' &&
+						s.type === 'extra' &&
+						currentBaseService.extras.includes(s.id),
+				)
+			: []
 
 	const basePrice = currentBase.price * rooms
 	const extrasTotal = extras.reduce((sum, id) => {
@@ -680,7 +695,6 @@ const Services = () => {
 		setExtras([])
 	}
 
-	// Химчистка из Firebase
 	const dcServices = services.filter(s => s.category === 'drycleaning')
 
 	const allDcCategories = {
@@ -868,15 +882,20 @@ const Services = () => {
 							<InfoBlock>
 								<BlockTitle>Дополнительные услуги</BlockTitle>
 								<ExtraList>
+									{extraServices.length === 0 && (
+										<p style={{ color: '#8B8478', fontSize: '0.9rem' }}>
+											Нет дополнительных услуг
+										</p>
+									)}
 									{extraServices.map(extra => (
 										<ExtraItem
 											key={extra.id}
 											checked={extras.includes(extra.id)}
 										>
-											<ExtraInfo>
+											<ExtraLeft>
 												<ExtraName>{extra.name}</ExtraName>
 												{extra.unit && <ExtraDesc>{extra.unit}</ExtraDesc>}
-											</ExtraInfo>
+											</ExtraLeft>
 											<ExtraPrice>+{extra.price.toLocaleString()} P</ExtraPrice>
 											<HiddenCheckbox
 												type='checkbox'
@@ -923,6 +942,15 @@ const Services = () => {
 								>
 									<Plus size={18} /> В корзину
 								</Button>
+								<p
+									style={{
+										color: '#5C5850',
+										fontSize: '0.8rem',
+										marginTop: '1rem',
+									}}
+								>
+									Окончательная стоимость уточняется после осмотра
+								</p>
 							</PriceBlock>
 						</SidePanel>
 					</ServiceContent>

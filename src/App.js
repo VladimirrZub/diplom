@@ -1,11 +1,19 @@
 import React from 'react'
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import {
+	BrowserRouter,
+	Routes,
+	Route,
+	useLocation,
+	Navigate,
+} from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 import { AnimatePresence } from 'framer-motion'
 import GlobalStyles from './styles/GlobalStyles'
+import { useAuth } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
 import { AuthProvider } from './context/AuthContext'
 import { ServicesProvider } from './context/ServicesContext'
+import { ThemeContextProvider, useThemeContext } from './context/ThemeContext'
 import Layout from './components/Layout/Layout'
 import PageTransition from './components/UI/PageTransition'
 import Home from './pages/Home'
@@ -19,18 +27,47 @@ import Checkout from './pages/Checkout'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Profile from './pages/Profile'
-import AdminLogin from './pages/admin/AdminLogin'
+import LeaveReview from './pages/LeaveReview'
 import AdminPanel from './pages/admin/AdminPanel'
 import AdminOrders from './pages/admin/AdminOrders'
 import AdminServices from './pages/admin/AdminServices'
 import AdminReviews from './pages/admin/AdminReviews'
-import LeaveReview from './pages/LeaveReview'
+import AdminSupport from './pages/admin/AdminSupport'
 
-const theme = {
+const lightTheme = {
+	colors: {
+		dark: '#F5F5F5',
+		darker: '#FFFFFF',
+		surface: 'rgba(255, 255, 255, 0.9)',
+		elevated: '#FAFAFA',
+		accent: '#1A1A1A',
+		accentLight: '#333333',
+		goldGradient: 'linear-gradient(135deg, #1A1A1A 0%, #333333 100%)',
+		text: '#1A1A1A',
+		textDimmed: '#555555',
+		textMuted: '#888888',
+		error: '#C84B4B',
+		success: '#5B9A68',
+		border: 'rgba(0, 0, 0, 0.1)',
+		borderAccent: 'rgba(0, 0, 0, 0.25)',
+	},
+	fonts: {
+		primary: "'Cormorant Garamond', serif",
+		secondary: "'Inter', sans-serif",
+	},
+	breakpoints: {
+		mobile: '480px',
+		tablet: '768px',
+		desktop: '1024px',
+		wide: '1400px',
+	},
+}
+
+const darkTheme = {
 	colors: {
 		dark: '#0B0E11',
 		darker: '#05070A',
-		surface: '#14191F',
+		surface: 'rgba(5, 7, 10, 0.80)',
 		elevated: '#1C2128',
 		accent: '#D4AF37',
 		accentLight: '#F0D060',
@@ -53,6 +90,17 @@ const theme = {
 		desktop: '1024px',
 		wide: '1400px',
 	},
+}
+
+// Admin route protection
+const AdminRoute = ({ children }) => {
+	const { isAdmin, loading } = useAuth()
+	if (loading)
+		return (
+			<div style={{ padding: '6rem', textAlign: 'center' }}>Загрузка...</div>
+		)
+	if (!isAdmin) return <Navigate to='/profile' replace />
+	return children
 }
 
 const AnimatedRoutes = () => {
@@ -157,18 +205,12 @@ const AnimatedRoutes = () => {
 					}
 				/>
 				<Route
-					path='/admin/login'
-					element={
-						<PageTransition>
-							<AdminLogin />
-						</PageTransition>
-					}
-				/>
-				<Route
 					path='/admin'
 					element={
 						<PageTransition>
-							<AdminPanel />
+							<AdminRoute>
+								<AdminPanel />
+							</AdminRoute>
 						</PageTransition>
 					}
 				>
@@ -204,15 +246,26 @@ const AnimatedRoutes = () => {
 							</PageTransition>
 						}
 					/>
+					<Route
+						path='support'
+						element={
+							<PageTransition>
+								<AdminSupport />
+							</PageTransition>
+						}
+					/>
 				</Route>
 			</Routes>
 		</AnimatePresence>
 	)
 }
 
-function App() {
+const AppContent = () => {
+	const { theme } = useThemeContext()
+	const currentTheme = theme === 'light' ? lightTheme : darkTheme
+
 	return (
-		<ThemeProvider theme={theme}>
+		<ThemeProvider theme={currentTheme}>
 			<GlobalStyles />
 			<BrowserRouter>
 				<AuthProvider>
@@ -226,6 +279,14 @@ function App() {
 				</AuthProvider>
 			</BrowserRouter>
 		</ThemeProvider>
+	)
+}
+
+function App() {
+	return (
+		<ThemeContextProvider>
+			<AppContent />
+		</ThemeContextProvider>
 	)
 }
 
