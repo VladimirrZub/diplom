@@ -258,9 +258,9 @@ const Contacts = () => {
 					<InfoItem>
 						<InfoLabel>Адрес</InfoLabel>
 						<InfoValue>
-							Москва, ул. Чистая, 15
+							Великий Новгород, ул. Чистая, 15
 							<br />
-							БЦ "Кристалл", офис 305
+							ТРЦ "Манго", офис 305
 						</InfoValue>
 					</InfoItem>
 					<InfoItem>
