@@ -220,6 +220,7 @@ const Checkout = () => {
 	const [suggestions, setSuggestions] = useState([])
 	const [showSuggestions, setShowSuggestions] = useState(false)
 	const debounceTimer = useRef(null)
+	const lastQuery = useRef('')
 
 	useEffect(() => {
 		window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -230,36 +231,48 @@ const Checkout = () => {
 			clearTimeout(debounceTimer.current)
 		}
 
-		if (query.length < 4) {
-			setSuggestions([])
-			setShowSuggestions(false)
+		if (query.length < 3 || query === lastQuery.current) {
 			return
 		}
 
 		debounceTimer.current = setTimeout(async () => {
-			try {
-				const response = await fetch(
-					`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=ru&accept-language=ru`,
-					{
-						headers: {
-							'User-Agent': 'ClearBreathApp/1.0 (clearbreath.ru)',
+			if (query !== lastQuery.current) {
+				lastQuery.current = query
+
+				try {
+					const response = await fetch(
+						`https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query)}&limit=5&countrycodes=ru&accept-language=ru&addressdetails=1`,
+						{
+							headers: {
+								'User-Agent': 'ClearBreathApp/1.0',
+							},
 						},
-					},
-				)
+					)
 
-				if (response.status === 429) {
-					console.warn('Слишком много запросов, ждём...')
-					return
+					if (response.ok) {
+						const data = await response.json()
+						const results = data.map(item => {
+							const addr = item.address
+							if (addr) {
+								const parts = []
+								if (addr.city || addr.town || addr.village)
+									parts.push(addr.city || addr.town || addr.village)
+								if (addr.road || addr.street)
+									parts.push(addr.road || addr.street)
+								if (addr.house_number) parts.push('д.' + addr.house_number)
+								return parts.filter(Boolean).join(', ')
+							}
+							// fallback — берём только первые 3 части адреса
+							return item.display_name.split(',').slice(0, 3).join(',')
+						})
+						setSuggestions(results)
+						setShowSuggestions(results.length > 0)
+					}
+				} catch (err) {
+					console.error('Ошибка:', err)
 				}
-
-				const data = await response.json()
-				const results = data.map(item => item.display_name)
-				setSuggestions(results)
-				setShowSuggestions(results.length > 0)
-			} catch (err) {
-				console.error('Ошибка:', err)
 			}
-		}, 1500) // Увеличил до 1.5 секунд
+		}, 2000)
 	}
 
 	const handleAddressChange = e => {
