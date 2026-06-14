@@ -17,6 +17,8 @@ import Button from '../components/UI/Button'
 import GlassCard from '../components/UI/GlassCard'
 import { useCart } from '../context/CartContext'
 import { useServices } from '../context/ServicesContext'
+import { useAuth } from '../context/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 const Container = styled.div`
 	max-width: 1400px;
@@ -637,6 +639,8 @@ const subtypeLabels = {
 const Services = () => {
 	const { addToCart } = useCart()
 	const { services, loading } = useServices()
+	const { isAuthenticated } = useAuth()
+	const navigate = useNavigate()
 
 	const [mainTab, setMainTab] = useState('cleaning')
 	const [cleaningSubTab, setCleaningSubTab] = useState('regular')
@@ -646,7 +650,6 @@ const Services = () => {
 	const [dcCategory, setDcCategory] = useState('clothing')
 	const [dcQuantities, setDcQuantities] = useState({})
 
-	// Сначала находим текущую базовую услугу
 	const currentBaseService = services.find(
 		s =>
 			s.category === 'cleaning' &&
@@ -666,7 +669,6 @@ const Services = () => {
 			features: [],
 		}
 
-	// Допы — только привязанные к текущей основной услуге
 	const extraServices =
 		currentBaseService?.extras?.length > 0
 			? services.filter(
@@ -685,6 +687,10 @@ const Services = () => {
 	const totalPrice = basePrice + extrasTotal
 
 	const handleAddCleaning = () => {
+		if (!isAuthenticated) {
+			navigate('/login', { state: { from: window.location.pathname } })
+			return
+		}
 		addToCart({
 			id: Date.now(),
 			title: `Уборка: ${currentBase.name} (${rooms}-комнатная)`,
@@ -755,6 +761,10 @@ const Services = () => {
 	}
 
 	const handleAddDryCleaning = item => {
+		if (!isAuthenticated) {
+			navigate('/login', { state: { from: window.location.pathname } })
+			return
+		}
 		const qty = dcQuantities[item.id] || 1
 		addToCart({
 			id: Date.now() + Math.random(),

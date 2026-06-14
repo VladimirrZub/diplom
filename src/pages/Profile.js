@@ -14,6 +14,7 @@ import GlassCard from '../components/UI/GlassCard'
 import Button from '../components/UI/Button'
 import FormField from '../components/UI/FormField'
 import { useAuth } from '../context/AuthContext'
+import { useCart } from '../context/CartContext'
 import { db } from '../firebase/config'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 
@@ -215,6 +216,7 @@ const Profile = () => {
 	const [edit, setEdit] = useState(false)
 	const [orders, setOrders] = useState([])
 	const [userReviews, setUserReviews] = useState([])
+	const { clearCart } = useCart()
 
 	useEffect(() => {
 		if (!isAuthenticated) navigate('/login')
@@ -260,6 +262,7 @@ const Profile = () => {
 	}
 
 	const handleLogout = async () => {
+		clearCart() // ← очищаем корзину при выходе
 		await logout()
 		navigate('/')
 	}

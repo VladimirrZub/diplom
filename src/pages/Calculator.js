@@ -5,6 +5,8 @@ import GlassCard from '../components/UI/GlassCard'
 import Button from '../components/UI/Button'
 import Input from '../components/UI/Input'
 import { useCart } from '../context/CartContext'
+import { useAuth } from '../context/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 const Container = styled.div`
 	max-width: 1300px;
@@ -334,6 +336,8 @@ const BreakdownRow = styled.div`
 
 const Calculator = () => {
 	const { addToCart } = useCart()
+	const { isAuthenticated } = useAuth()
+	const navigate = useNavigate()
 	const [type, setType] = useState('apartment')
 	const [area, setArea] = useState(50)
 	const [rooms, setRooms] = useState(2)
@@ -502,6 +506,10 @@ const Calculator = () => {
 	}
 
 	const handleAddToCart = () => {
+		if (!isAuthenticated) {
+			navigate('/login', { state: { from: window.location.pathname } })
+			return
+		}
 		addToCart({
 			id: Date.now(),
 			title: serviceNames[type],

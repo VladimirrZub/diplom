@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { useAuth } from '../../context/AuthContext' // в начале файла
 import { Link, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
+import { Sun, Moon } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
+import { useThemeContext } from '../../context/ThemeContext'
 
 const HeaderWrapper = styled.header`
 	position: fixed;
@@ -146,6 +148,31 @@ const MobileProfileLink = styled(Link)`
 	}
 `
 
+const ThemeToggleButton = styled.button`
+	background: none;
+	border: none;
+	color: ${props => props.theme.colors.textDimmed};
+	cursor: pointer;
+	font-family: ${props => props.theme.fonts.primary};
+	font-size: 1.4rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	transition: color 0.3s;
+	margin-top: 1rem;
+
+	&:hover {
+		color: ${props => props.theme.colors.accent};
+	}
+
+	@media (min-width: 769px) {
+		display: none; /* на десктопе тема переключается через отдельную кнопку ThemeToggle */
+	}
+`
+
 const MenuToggle = styled.button`
 	display: none;
 	background: none;
@@ -209,6 +236,7 @@ const Header = () => {
 	const [scrolled, setScrolled] = useState(false)
 	const location = useLocation()
 	const { isAdmin } = useAuth()
+	const { theme, toggleTheme } = useThemeContext()
 
 	useEffect(() => {
 		const handleScroll = () => setScrolled(window.scrollY > 50)
@@ -281,6 +309,10 @@ const Header = () => {
 					>
 						{isAdmin ? 'Админ' : 'Личный кабинет'}
 					</MobileProfileLink>
+					<ThemeToggleButton onClick={toggleTheme}>
+						{theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />}
+						{theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
+					</ThemeToggleButton>
 				</Nav>
 
 				<HeaderRight>

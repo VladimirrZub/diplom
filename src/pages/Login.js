@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 import { Eye, EyeOff } from 'lucide-react'
 import GlassCard from '../components/UI/GlassCard'
@@ -92,6 +92,8 @@ const Login = () => {
 	const [fieldErrors, setFieldErrors] = useState({})
 	const [showPassword, setShowPassword] = useState(false)
 	const [error, setError] = useState('')
+	const location = useLocation()
+	const from = location.state?.from || '/profile'
 
 	const validateEmail = email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 
@@ -114,11 +116,10 @@ const Login = () => {
 		try {
 			const isAdmin = await login(form.email, form.password)
 
-			// Редирект в зависимости от роли
 			if (isAdmin) {
 				navigate('/admin', { replace: true })
 			} else {
-				navigate('/profile', { replace: true })
+				navigate(from, { replace: true })
 			}
 		} catch (err) {
 			console.error('Login error:', err)

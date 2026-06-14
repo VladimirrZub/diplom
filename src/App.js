@@ -50,6 +50,7 @@ const lightTheme = {
 		success: '#5B9A68',
 		border: 'rgba(0, 0, 0, 0.1)',
 		borderAccent: 'rgba(0, 0, 0, 0.25)',
+		inputText: '#444444', // ← цвет текста в полях ввода как placeholder
 	},
 	fonts: {
 		primary: "'Cormorant Garamond', serif",
@@ -79,6 +80,7 @@ const darkTheme = {
 		success: '#5B9A68',
 		border: 'rgba(212, 175, 55, 0.1)',
 		borderAccent: 'rgba(212, 175, 55, 0.25)',
+		inputText: '#E8E3D9', // ← оставляем прежний цвет текста
 	},
 	fonts: {
 		primary: "'Cormorant Garamond', serif",
