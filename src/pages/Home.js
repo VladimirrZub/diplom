@@ -447,27 +447,62 @@ const Home = () => {
 	const scrollRef = useRef(null)
 
 	useEffect(() => {
+		const isMobile = window.innerWidth <= 768
+
 		const handleScroll = () => {
 			const scrolled = window.pageYOffset
 
-			if (eyebrowRef.current) {
-				eyebrowRef.current.style.transform = `translateY(${scrolled * 0.08}px)`
-				eyebrowRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.001)
-			}
-			if (titleRef.current) {
-				titleRef.current.style.transform = `translateY(${scrolled * 0.1}px)`
-				titleRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.0012)
-			}
-			if (subtitleRef.current) {
-				subtitleRef.current.style.transform = `translateY(${scrolled * 0.14}px)`
-				subtitleRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.0018)
-			}
-			if (buttonsRef.current) {
-				buttonsRef.current.style.transform = `translateY(${scrolled * 0.16}px)`
-				buttonsRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.001)
-			}
-			if (scrollRef.current) {
-				scrollRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.003)
+			if (isMobile) {
+				// На мобильных не применяем сдвиги, только плавное уменьшение непрозрачности до 0.3
+				if (eyebrowRef.current) {
+					eyebrowRef.current.style.transform = ''
+					eyebrowRef.current.style.opacity = Math.max(
+						0.3,
+						1 - scrolled * 0.0005,
+					)
+				}
+				if (titleRef.current) {
+					titleRef.current.style.transform = ''
+					titleRef.current.style.opacity = Math.max(0.3, 1 - scrolled * 0.0008)
+				}
+				if (subtitleRef.current) {
+					subtitleRef.current.style.transform = ''
+					subtitleRef.current.style.opacity = Math.max(
+						0.3,
+						1 - scrolled * 0.001,
+					)
+				}
+				if (buttonsRef.current) {
+					buttonsRef.current.style.transform = ''
+					buttonsRef.current.style.opacity = Math.max(
+						0.3,
+						1 - scrolled * 0.0007,
+					)
+				}
+				if (scrollRef.current) {
+					scrollRef.current.style.opacity = Math.max(0.2, 1 - scrolled * 0.002)
+				}
+			} else {
+				// Десктопный параллакс без изменений
+				if (eyebrowRef.current) {
+					eyebrowRef.current.style.transform = `translateY(${scrolled * 0.08}px)`
+					eyebrowRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.001)
+				}
+				if (titleRef.current) {
+					titleRef.current.style.transform = `translateY(${scrolled * 0.1}px)`
+					titleRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.0012)
+				}
+				if (subtitleRef.current) {
+					subtitleRef.current.style.transform = `translateY(${scrolled * 0.14}px)`
+					subtitleRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.0018)
+				}
+				if (buttonsRef.current) {
+					buttonsRef.current.style.transform = `translateY(${scrolled * 0.16}px)`
+					buttonsRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.001)
+				}
+				if (scrollRef.current) {
+					scrollRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.003)
+				}
 			}
 		}
 
