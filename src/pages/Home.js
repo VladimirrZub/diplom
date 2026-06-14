@@ -32,7 +32,6 @@ const HeroContent = styled.div`
 	padding: 0 1.5rem;
 	max-width: 1000px;
 	width: 100%;
-	will-change: transform, opacity;
 `
 
 const HeroEyebrow = styled.div`
@@ -42,7 +41,6 @@ const HeroEyebrow = styled.div`
 	text-transform: uppercase;
 	color: ${props => props.theme.colors.accent};
 	margin-bottom: 2.5rem;
-	will-change: transform, opacity;
 
 	&::before,
 	&::after {
@@ -69,7 +67,6 @@ const HeroTitle = styled.h1`
 	line-height: 1.05;
 	margin-bottom: 1.5rem;
 	letter-spacing: 0.02em;
-	will-change: transform, opacity;
 
 	.accent {
 		color: ${props => props.theme.colors.accent};
@@ -101,7 +98,6 @@ const HeroSubtitle = styled.p`
 	line-height: 1.8;
 	font-weight: 300;
 	padding: 0 0.5rem;
-	will-change: transform, opacity;
 `
 
 const HeroButtons = styled.div`
@@ -109,7 +105,6 @@ const HeroButtons = styled.div`
 	gap: 1rem;
 	justify-content: center;
 	flex-wrap: wrap;
-	will-change: transform, opacity;
 
 	@media (max-width: 480px) {
 		flex-direction: column;
@@ -128,7 +123,6 @@ const ScrollIndicator = styled.div`
 	align-items: center;
 	gap: 0.8rem;
 	z-index: 10;
-	will-change: opacity;
 
 	@media (max-width: 480px) {
 		bottom: 1rem;
@@ -447,78 +441,35 @@ const Home = () => {
 	const scrollRef = useRef(null)
 
 	useEffect(() => {
-		const isMobile = window.innerWidth <= 768
-		let rafId = null
-
-		const updateParallax = () => {
-			const scrolled = window.pageYOffset
-
-			if (isMobile) {
-				// На мобильных — без сдвигов, только прозрачность, минимум 0.5
-				if (eyebrowRef.current) {
-					eyebrowRef.current.style.transform = 'none'
-					eyebrowRef.current.style.opacity = Math.max(
-						0.5,
-						1 - scrolled * 0.0003,
-					)
-				}
-				if (titleRef.current) {
-					titleRef.current.style.transform = 'none'
-					titleRef.current.style.opacity = Math.max(0.5, 1 - scrolled * 0.0005)
-				}
-				if (subtitleRef.current) {
-					subtitleRef.current.style.transform = 'none'
-					subtitleRef.current.style.opacity = Math.max(
-						0.5,
-						1 - scrolled * 0.0008,
-					)
-				}
-				if (buttonsRef.current) {
-					buttonsRef.current.style.transform = 'none'
-					buttonsRef.current.style.opacity = Math.max(
-						0.5,
-						1 - scrolled * 0.0005,
-					)
-				}
-				if (scrollRef.current) {
-					scrollRef.current.style.opacity = Math.max(0.2, 1 - scrolled * 0.001)
-				}
-			} else {
-				// Десктоп — прежний параллакс
-				if (eyebrowRef.current) {
-					eyebrowRef.current.style.transform = `translateY(${scrolled * 0.08}px)`
-					eyebrowRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.001)
-				}
-				if (titleRef.current) {
-					titleRef.current.style.transform = `translateY(${scrolled * 0.1}px)`
-					titleRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.0012)
-				}
-				if (subtitleRef.current) {
-					subtitleRef.current.style.transform = `translateY(${scrolled * 0.14}px)`
-					subtitleRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.0018)
-				}
-				if (buttonsRef.current) {
-					buttonsRef.current.style.transform = `translateY(${scrolled * 0.16}px)`
-					buttonsRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.001)
-				}
-				if (scrollRef.current) {
-					scrollRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.003)
-				}
-			}
-			rafId = null
-		}
+		const isDesktop = window.innerWidth > 768
+		if (!isDesktop) return // на мобильных ничего не делаем
 
 		const handleScroll = () => {
-			if (!rafId) {
-				rafId = requestAnimationFrame(updateParallax)
+			const scrolled = window.pageYOffset
+
+			if (eyebrowRef.current) {
+				eyebrowRef.current.style.transform = `translateY(${scrolled * 0.08}px)`
+				eyebrowRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.001)
+			}
+			if (titleRef.current) {
+				titleRef.current.style.transform = `translateY(${scrolled * 0.1}px)`
+				titleRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.0012)
+			}
+			if (subtitleRef.current) {
+				subtitleRef.current.style.transform = `translateY(${scrolled * 0.14}px)`
+				subtitleRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.0018)
+			}
+			if (buttonsRef.current) {
+				buttonsRef.current.style.transform = `translateY(${scrolled * 0.16}px)`
+				buttonsRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.001)
+			}
+			if (scrollRef.current) {
+				scrollRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.003)
 			}
 		}
 
 		window.addEventListener('scroll', handleScroll, { passive: true })
-		return () => {
-			window.removeEventListener('scroll', handleScroll)
-			if (rafId) cancelAnimationFrame(rafId)
-		}
+		return () => window.removeEventListener('scroll', handleScroll)
 	}, [])
 
 	const features = [
