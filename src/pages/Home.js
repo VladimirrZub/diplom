@@ -448,42 +448,43 @@ const Home = () => {
 
 	useEffect(() => {
 		const isMobile = window.innerWidth <= 768
+		let rafId = null
 
-		const handleScroll = () => {
+		const updateParallax = () => {
 			const scrolled = window.pageYOffset
 
 			if (isMobile) {
-				// На мобильных не применяем сдвиги, только плавное уменьшение непрозрачности до 0.3
+				// На мобильных — без сдвигов, только прозрачность, минимум 0.5
 				if (eyebrowRef.current) {
-					eyebrowRef.current.style.transform = ''
+					eyebrowRef.current.style.transform = 'none'
 					eyebrowRef.current.style.opacity = Math.max(
-						0.3,
-						1 - scrolled * 0.0005,
+						0.5,
+						1 - scrolled * 0.0003,
 					)
 				}
 				if (titleRef.current) {
-					titleRef.current.style.transform = ''
-					titleRef.current.style.opacity = Math.max(0.3, 1 - scrolled * 0.0008)
+					titleRef.current.style.transform = 'none'
+					titleRef.current.style.opacity = Math.max(0.5, 1 - scrolled * 0.0005)
 				}
 				if (subtitleRef.current) {
-					subtitleRef.current.style.transform = ''
+					subtitleRef.current.style.transform = 'none'
 					subtitleRef.current.style.opacity = Math.max(
-						0.3,
-						1 - scrolled * 0.001,
+						0.5,
+						1 - scrolled * 0.0008,
 					)
 				}
 				if (buttonsRef.current) {
-					buttonsRef.current.style.transform = ''
+					buttonsRef.current.style.transform = 'none'
 					buttonsRef.current.style.opacity = Math.max(
-						0.3,
-						1 - scrolled * 0.0007,
+						0.5,
+						1 - scrolled * 0.0005,
 					)
 				}
 				if (scrollRef.current) {
-					scrollRef.current.style.opacity = Math.max(0.2, 1 - scrolled * 0.002)
+					scrollRef.current.style.opacity = Math.max(0.2, 1 - scrolled * 0.001)
 				}
 			} else {
-				// Десктопный параллакс без изменений
+				// Десктоп — прежний параллакс
 				if (eyebrowRef.current) {
 					eyebrowRef.current.style.transform = `translateY(${scrolled * 0.08}px)`
 					eyebrowRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.001)
@@ -504,10 +505,20 @@ const Home = () => {
 					scrollRef.current.style.opacity = Math.max(0, 1 - scrolled * 0.003)
 				}
 			}
+			rafId = null
+		}
+
+		const handleScroll = () => {
+			if (!rafId) {
+				rafId = requestAnimationFrame(updateParallax)
+			}
 		}
 
 		window.addEventListener('scroll', handleScroll, { passive: true })
-		return () => window.removeEventListener('scroll', handleScroll)
+		return () => {
+			window.removeEventListener('scroll', handleScroll)
+			if (rafId) cancelAnimationFrame(rafId)
+		}
 	}, [])
 
 	const features = [
